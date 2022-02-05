@@ -22,7 +22,7 @@ The article is linked here:
 ```{r message=FALSE}
 library(readr)
 library(dplyr)
-menSurvey <- read_csv("https://raw.githubusercontent.com/justinm0rgan/data607/main/Assignments/1/masculinity-survey/raw-responses.csv?token=GHSAT0AAAAAABPMFD5CF5TL7EW64ZZW3BYKYP6S5BQ", show_col_types = F,col_select = 2:98)
+menSurvey <- read_csv("https://raw.githubusercontent.com/justinm0rgan/data607/main/Assignments/1/data/raw-responses.csv?token=GHSAT0AAAAAABPMFD5D66OXX2IVUENVMOPKYP6TDXA", show_col_types = F,col_select = 2:98)
 head(menSurvey)
 ```
 
@@ -43,8 +43,8 @@ All of this is outlined in the tables below
 | Race 	| race2 	| Race 	|
 | Ethnicity 	| racethn4 	| Ethnicity 	|
 | Age 	| age3 	| Age 	|
-| Sexual Orientation 	| orientation 	| Orientation 	|
-| Education 	| educ4 	| Education Level 	|
+| Sexual Orientation 	| orientation 	| Sexual_Orientation 	|
+| Education 	| educ4 	| Education 	|
 
 #### Subset of questions
 

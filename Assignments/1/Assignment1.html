@@ -179,7 +179,7 @@ pre code {
 <a href="https://fivethirtyeight.com/features/what-do-men-think-it-means-to-be-a-man">What Do Men Think It Means To Be A Man?</a>.</p>
 <pre class="r"><code>library(readr)
 library(dplyr)
-menSurvey &lt;- read_csv(&quot;https://raw.githubusercontent.com/justinm0rgan/data607/main/Assignments/1/masculinity-survey/raw-responses.csv?token=GHSAT0AAAAAABPMFD5CF5TL7EW64ZZW3BYKYP6S5BQ&quot;, show_col_types = F,col_select = 2:98)
+menSurvey &lt;- read_csv(&quot;https://raw.githubusercontent.com/justinm0rgan/data607/main/Assignments/1/data/raw-responses.csv?token=GHSAT0AAAAAABPMFD5D66OXX2IVUENVMOPKYP6TDXA&quot;, show_col_types = F,col_select = 2:98)
 head(menSurvey)</code></pre>
 <pre><code># A tibble: 6 × 97
   StartDate    EndDate   q0001 q0002 q0004_0001 q0004_0002 q0004_0003 q0004_0004
@@ -238,12 +238,12 @@ head(menSurvey)</code></pre>
 <tr class="even">
 <td>Sexual Orientation</td>
 <td>orientation</td>
-<td>Orientation</td>
+<td>Sexual_Orientation</td>
 </tr>
 <tr class="odd">
 <td>Education</td>
 <td>educ4</td>
-<td>Education Level</td>
+<td>Education</td>
 </tr>
 </tbody>
 </table>
@@ -265,47 +265,47 @@ head(menSurvey)</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td>In general, how masculine or “manly” do you feel?</td>
+<td><em>In general, how masculine or “manly” do you feel?</em></td>
 <td>q0001</td>
 <td>Question_1</td>
 </tr>
 <tr class="even">
-<td>How important is it to you that others see you as masculine?</td>
+<td><em>How important is it to you that others see you as masculine?</em></td>
 <td>q0002</td>
 <td>Question_2</td>
 </tr>
 <tr class="odd">
-<td>Do you think that society puts pressure on men in a way that is unhealthy or bad<br>for them?</td>
+<td><em>Do you think that society puts pressure on men in a way that is unhealthy or bad<br>for them?</em></td>
 <td>q0005</td>
 <td>Question_5</td>
 </tr>
 <tr class="even">
-<td>How often would you say you do each of the following? Cry</td>
+<td><em>How often would you say you do each of the following? Cry</em></td>
 <td>q0007_0004</td>
 <td>Question_7_4</td>
 </tr>
 <tr class="odd">
-<td>How often would you say you do each of the following? Watch sports of any kind</td>
+<td><em>How often would you say you do each of the following? Watch sports of any kind</em></td>
 <td>q0007_0008</td>
 <td>Question_7_8</td>
 </tr>
 <tr class="even">
-<td>How often would you say you do each of the following? See a therapist</td>
+<td><em>How often would you say you do each of the following? See a therapist</em></td>
 <td>q0007_0010</td>
 <td>Question_7_10</td>
 </tr>
 <tr class="odd">
-<td>How often would you say you do each of the following? Feel lonely or isolated</td>
+<td><em>How often would you say you do each of the following? Feel lonely or isolated</em></td>
 <td>q0007_0011</td>
 <td>Question_7_11</td>
 </tr>
 <tr class="even">
-<td>Which of the following do you worry about on a daily or near daily basis? (Select<br>all that apply.) Your mental health</td>
+<td><em>Which of the following do you worry about on a daily or near daily basis? (Select<br>all that apply.) Your mental health</em></td>
 <td>q0008_0008</td>
 <td>Question_8_8</td>
 </tr>
 <tr class="odd">
-<td>Which of the following do you worry about on a daily or near daily basis? (Select<br>all that apply.) Your physical health</td>
+<td><em>Which of the following do you worry about on a daily or near daily basis? (Select<br>all that apply.) Your physical health</em></td>
 <td>q0008_0009</td>
 <td>Question_8_9</td>
 </tr>
