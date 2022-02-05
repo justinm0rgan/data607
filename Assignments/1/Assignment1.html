@@ -175,22 +175,12 @@ pre code {
 <h2>What Do Men Think It Means To Be A Man?</h2>
 <div id="overview" class="section level3">
 <h3>Overview</h3>
-<p>The article was essentially about men’s idea about masculinity, and its subsequent role in society. A survey was given in light of the <code>#MeToo</code> movement, which is/was a movement where folks came out about their abuses primarily from men. The goal of this survey was to attempt to quantify if the <code>#MeToo</code> movement had any effect on how men feel. Did it change their ideas of what makes a man a man, or has it fallen on deaf ears. <br> <br> The article is linked here:<br />
+<p>The article was essentially about mens idea about masculinity, and its subsequent role in society. A survey was given in light of the 2018 <code>#MeToo</code> movement, which is/was a movement where folks came out about their abuses primarily from men. The goal of this survey was to attempt to quantify if the <code>#MeToo</code> movement had any effect on how men feel. Did it change their ideas of what makes a man a man, or had it fallen on deaf ears. <br> <br> The article is linked here:<br />
 <a href="https://fivethirtyeight.com/features/what-do-men-think-it-means-to-be-a-man">What Do Men Think It Means To Be A Man?</a>.</p>
 <pre class="r"><code>library(readr)
-library(dplyr)</code></pre>
-<pre><code>
-Attaching package: &#39;dplyr&#39;</code></pre>
-<pre><code>The following objects are masked from &#39;package:stats&#39;:
-
-    filter, lag</code></pre>
-<pre><code>The following objects are masked from &#39;package:base&#39;:
-
-    intersect, setdiff, setequal, union</code></pre>
-<pre class="r"><code>menSurvey &lt;- read_csv(&quot;/Users/justinwilliams/Documents/CUNY SPS/607/Assignments/1/masculinity-survey/raw-responses.csv&quot;, show_col_types = F,col_select = 2:98)</code></pre>
-<pre><code>New names:
-* `` -&gt; ...1</code></pre>
-<pre class="r"><code>head(menSurvey)</code></pre>
+library(dplyr)
+menSurvey &lt;- read_csv(&quot;https://raw.githubusercontent.com/justinm0rgan/data607/main/Assignments/1/masculinity-survey/raw-responses.csv?token=GHSAT0AAAAAABPMFD5CF5TL7EW64ZZW3BYKYP6S5BQ&quot;, show_col_types = F,col_select = 2:98)
+head(menSurvey)</code></pre>
 <pre><code># A tibble: 6 × 97
   StartDate    EndDate   q0001 q0002 q0004_0001 q0004_0002 q0004_0003 q0004_0004
   &lt;chr&gt;        &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;     
@@ -357,12 +347,10 @@ head(menSurveySubset[,c(&quot;Sexual_Orientation&quot;, &quot;Question_5&quot;, 
 5 Straight                    1 &lt;NA&gt;              
 6 Straight                    1 &lt;NA&gt;              </code></pre>
 </div>
-<div id="visuals" class="section level4">
-<h4>Visuals</h4>
-</div>
 </div>
 <div id="conclusion" class="section level3">
 <h3>Conclusion</h3>
+<p>The article concludes suggesting that American men are still fractured about their role in society, and that despite a years worth of the <code>#MeToo</code> headline, it does not mean the majority of men have altered their views on masculinity. For next steps, I think an update to this survey (its from 2018) would be appropriate. The <code>#MeToo</code> movement has continued to remain in the limelight, and if administered again, we would perhaps see significantly different survey results.</p>
 </div>
 </div>
 

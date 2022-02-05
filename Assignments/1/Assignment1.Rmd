@@ -13,16 +13,16 @@ knitr::opts_chunk$set(echo = TRUE, comment = NA)
 
 ### Overview
 
-The article was essentially about men's idea about masculinity, and its subsequent role in society. A survey was given in light of the `#MeToo` movement, which is/was a movement where folks came out about their abuses primarily from men. The goal of this survey was to attempt to quantify if the `#MeToo` movement had any effect on how men feel. Did it change their ideas of what makes a man a man, or has it fallen on deaf ears.
+The article was essentially about mens idea about masculinity, and its subsequent role in society. A survey was given in light of the 2018 `#MeToo` movement, which is/was a movement where folks came out about their abuses primarily from men. The goal of this survey was to attempt to quantify if the `#MeToo` movement had any effect on how men feel. Did it change their ideas of what makes a man a man, or had it fallen on deaf ears.
 <br>
 <br>
 The article is linked here:  
 <a href="https://fivethirtyeight.com/features/what-do-men-think-it-means-to-be-a-man">What Do Men Think It Means To Be A Man?</a>.
 
-```{r}
+```{r message=FALSE}
 library(readr)
 library(dplyr)
-menSurvey <- read_csv("/Users/justinwilliams/Documents/CUNY SPS/607/Assignments/1/masculinity-survey/raw-responses.csv", show_col_types = F,col_select = 2:98)
+menSurvey <- read_csv("https://raw.githubusercontent.com/justinm0rgan/data607/main/Assignments/1/masculinity-survey/raw-responses.csv?token=GHSAT0AAAAAABPMFD5CF5TL7EW64ZZW3BYKYP6S5BQ", show_col_types = F,col_select = 2:98)
 head(menSurvey)
 ```
 
@@ -50,15 +50,15 @@ All of this is outlined in the tables below
 
 | Question                                                                                                                   	| Column Name 	| New Column Name 	|
 |----------------------------------------------------------------------------------------------------------------------------	|-------------	|-----------------	|
-| In general, how masculine or "manly" do you feel?                                                                          	| q0001       	| Question_1      	|
-| How important is it to you that others see you as masculine?                                                               	| q0002       	| Question_2      	|
-| Do you think that society puts pressure on men in a way that is unhealthy or bad<br>for them?                              	| q0005       	| Question_5      	|
-| How often would you say you do each of the following?  Cry                                                                 	| q0007_0004  	| Question_7_4    	|
-| How often would you say you do each of the following? Watch sports of any kind                                             	| q0007_0008  	| Question_7_8    	|
-| How often would you say you do each of the following? See a therapist                                                      	| q0007_0010  	| Question_7_10   	|
-| How often would you say you do each of the following? Feel lonely or isolated                                              	| q0007_0011  	| Question_7_11   	|
-| Which of the following do you worry about on a daily or near daily basis? (Select<br>all that apply.) Your mental health   	| q0008_0008  	| Question_8_8    	|
-| Which of the following do you worry about on a daily or near daily basis? (Select<br>all that apply.) Your physical health 	| q0008_0009  	| Question_8_9    	|
+| *In general, how masculine or "manly" do you feel?*                                                                          	| q0001       	| Question_1      	|
+| *How important is it to you that others see you as masculine?*                                                               	| q0002       	| Question_2      	|
+| *Do you think that society puts pressure on men in a way that is unhealthy or bad<br>for them?*                              	| q0005       	| Question_5      	|
+| *How often would you say you do each of the following?  Cry*                                                                 	| q0007_0004  	| Question_7_4    	|
+| *How often would you say you do each of the following? Watch sports of any kind*                                             	| q0007_0008  	| Question_7_8    	|
+| *How often would you say you do each of the following? See a therapist*                                                      	| q0007_0010  	| Question_7_10   	|
+| *How often would you say you do each of the following? Feel lonely or isolated*                                              	| q0007_0011  	| Question_7_11   	|
+| *Which of the following do you worry about on a daily or near daily basis? (Select<br>all that apply.) Your mental health*   	| q0008_0008  	| Question_8_8    	|
+| *Which of the following do you worry about on a daily or near daily basis? (Select<br>all that apply.) Your physical health* 	| q0008_0009  	| Question_8_9    	|
 
 ```{r}
 # subset and rename columns
