@@ -1,0 +1,75 @@
+---
+title: "Assignment 2 - R and SQL"
+author: "Justin Williams"
+date: "2/12/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load-packages, message=FALSE}
+library(RPostgres)
+library(DBI)
+```
+
+## Connect to PostgreSQL Database
+
+Database username and password will be prompted by `askForPassword` function from rstudioapi.
+
+```{r connect-database}
+conn <- dbConnect(
+  RPostgres::Postgres(),
+  dbname = "movies",
+  host = "localhost",
+  port = "5434",
+  user = rstudioapi::askForPassword("Database user"),
+  password = rstudioapi::askForPassword("Database password")
+)
+```
+
+
+Let's verify that the three tables exist in the database
+
+```{r verify-tables}
+dbExistsTable(conn,"people")
+dbExistsTable(conn,"movies")
+dbExistsTable(conn,"ratings")
+```
+
+## Read tables in R
+Once verified, we can read our tables into R using dbReadTable:
+
+```{r read-tables}
+people <- dbReadTable(conn,c("people"))
+movies <- dbReadTable(conn, c("movies"))
+ratings <- dbReadTable(conn,c("ratings"))
+```
+
+Take a look at the tables:
+```{r}
+people
+movies
+ratings
+```
+## Editing database directly from R
+
+I surveyed my friends to see what their ratings were on the aforementioned movies, so now I need to update the `ratings` table with the results.
+
+```{r edit-database}
+res <- dbSendQuery(conn, 
+                   statement = 
+                     paste("INSERT INTO ratings (person_id, movie_id, rating) VALUES   ('1','1','4'),('1','2',NULL),('1','3','2'),('1','4','3'),('1','5','4'),('1','6','1'),
+('2','1','4'),('2','2',NULL),('2','3','3'),('2','4','3'),('2','5',NULL),('2','6',NULL),
+('3','1','3'),('3','2','3'),('3','3',NULL),('3','4',NULL),('3','5','3'),('3','6',NULL),
+('4','1','4'),('4','2','3'),('4','3',NULL),('4','4','5'),('4','5','4'),('4','6',NULL),
+('5','1','5'),('5','2',NULL),('5','3','3'),('5','4',NULL),('5','5',NULL),('5','6','4')"));
+```
+
+Look at updated ratings table:
+```{r updated-ratings}
+ratings <- dbReadTable(conn,c("ratings")) # read updated table in from db
+ratings
+```
+
