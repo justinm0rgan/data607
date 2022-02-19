@@ -11,9 +11,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Exercises for Week 3 Data 607
 
-#1. Using the 173 majors listed in fivethirtyeight.com’s College Majors dataset [https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/], provide code that identifies the majors that contain either "DATA" or "STATISTICS"
+*#1. Using the 173 majors listed in fivethirtyeight.com’s College Majors dataset [https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/], provide code that identifies the majors that contain either "DATA" or "STATISTICS"*
+```{r read-csv}
+library(tidyverse)
+# read in csv file
+majors <- read.csv("https://raw.githubusercontent.com/justinm0rgan/data607/main/Assignments/3/majors-list.csv")
+# enter search  query and return  results
+str_view(majors$Major,"DATA|STATISTICS", match = T)
+```
 
-#2 Write code that transforms the data below:
+*#2 Write code that transforms the data below:*
 [1] "bell pepper"  "bilberry"     "blackberry"   "blood orange"
 [5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"  
 [9] "elderberry"   "lime"         "lychee"       "mulberry"    
@@ -21,30 +28,71 @@ knitr::opts_chunk$set(echo = TRUE)
 Into a format like this:
 c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")
 
+```{r original-string}
+# would take a second [] without producing an error, so created sep  str and 
+# concatenated them.
+fruits_org_1 <- '[1] "bell pepper"  "bilberry" "blackberry"   "blood orange"' 
+fruits_org_2 <- '[5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"'  
+fruits_org_3 <- '[9] "elderberry"   "lime"         "lychee"       "mulberry"'    
+fruits_org_4 <- '[13] "olive"        "salal berry"'
+#  full string
+fruits_org <- str_c(fruits_org_1,fruits_org_2,fruits_org_3,fruits_org_4)
+fruits_org
+```
+```{r cleaned-string}
+str_view(fruits_org,"\"([a-z]+.[a-z]+)\"", match = T)
+
+```
+
+
 The two exercises below are taken from R for Data Science, 14.3.5.1 in the on-line version:
-#3 Describe, in words, what these expressions will match:
+*#3 Describe, in words, what these expressions will match:*
 (.)\1\1
+(.) equals any character, then \1 equals a repetition of that character in the (), 
+a second \1 equals another repetition of the character in the (). 
+**Essentially it will match any three like characters in a row, i.e. "aaa" or 111.**
+
 "(.)(.)\\2\\1"
+(.) again matches any character, with this twice, any two characters. This
+example is a string so the  \\2 is actually regex \2  which means it matches a
+repetition of the the group right before it. This is followed by a \\1 which
+denotes a repetition of the first group.
+**Therefore this will match any two characters then their reverse i.e. "abba" or 2332.**
+
 (..)\1
+(..) matches any two characters, then \1 denotes a repetition of those characters
+**For example this would match "abab" or 1212**
+
 "(.).\\1.\\1"
+(.) will match any character, the parenthesis denote a group. This is followed
+by any character (not in a group).  This pattern is a string, so the \\1 will then match the first character that was enclosed in the parenthesis. This is followed by a . for any character.Then once more the \\1 repeats the first character enclosed by parenthesis.
+**For example, this pattern would match any 5 character term where the first,**
+**third and last are the same i.e."abaca" or 12131**
+
 "(.)(.)(.).*\\3\\2\\1"
+(.) create groups where each can match any character. The . without parenthesis
+denotes any character WITHOUT a group, this is followed by an *, which  denotes
+0 or more of any character, so the . after  the (.) could be repeated many times
+or it may not be. This pattern is string once more, so the following \\3\\2\\1 equate
+to repetitions of the each group in a mirror image of its previous rendition.
+**For example this pattern would match any three characters followed by zero or**
+**more of a fourth character, then a mirror image of the first three characters i.e.**
+**"abccba" or "abc99789cba" or "123lkj34321". As long as the first three**
+**and  the last three are mirror images of each  other, the pattern would match.**
+
 #4 Construct regular expressions to match words that:
 Start and end with the same character.
+```{r start-end-same}
+str_view(stringr::words, "^(.).*\\1$", match = T)
+```
+
 Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)
+```{r repeated-pair}
+str_view(stringr::words, ".*([a-z][a-z]).*\\1.*\\1", match = T)
+```
+
 Contain one letter repeated in at least three places (e.g. "eleven" contains three "e"s.)
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r  one-letter-three-places}
+str_view(stringr::words, ".*([a-z]).*\\1.*\\1.*", match = T)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
