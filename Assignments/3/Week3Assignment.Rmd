@@ -29,27 +29,34 @@ Into a format like this:
 c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")
 
 ```{r original-string}
-# would take a second [] without producing an error, so created sep  str and 
+# would not take a second [] without producing an error, so created sep  str and 
 # concatenated them.
 fruits_org_1 <- '[1] "bell pepper"  "bilberry" "blackberry"   "blood orange"' 
 fruits_org_2 <- '[5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"'  
 fruits_org_3 <- '[9] "elderberry"   "lime"         "lychee"       "mulberry"'    
 fruits_org_4 <- '[13] "olive"        "salal berry"'
-#  full string
+
+#  full string needing to be transformed
 fruits_org <- str_c(fruits_org_1,fruits_org_2,fruits_org_3,fruits_org_4)
 fruits_org
 ```
+
 ```{r cleaned-string}
-str_view(fruits_org,"\"([a-z]+.[a-z]+)\"", match = T)
-
+fruits_org %>% 
+  str_extract_all("\"([a-z]+.[a-z]+)\"") %>% 
+  unlist() %>% 
+  str_remove_all("\"") %>% 
+  as_tibble() %>% 
+  paste0(sep = "", collapse = ",") %>% 
+  writeLines()
 ```
-
 
 The two exercises below are taken from R for Data Science, 14.3.5.1 in the on-line version:
 *#3 Describe, in words, what these expressions will match:*
 (.)\1\1
 (.) equals any character, then \1 equals a repetition of that character in the (), 
-a second \1 equals another repetition of the character in the (). 
+a second \1 equals another repetition of the character in the ().
+However, if this is a string literal, then it needs to have double backslash to escape the backslash. 
 **Essentially it will match any three like characters in a row, i.e. "aaa" or 111.**
 
 "(.)(.)\\2\\1"
@@ -88,7 +95,7 @@ str_view(stringr::words, "^(.).*\\1$", match = T)
 
 Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)
 ```{r repeated-pair}
-str_view(stringr::words, ".*([a-z][a-z]).*\\1.*\\1", match = T)
+str_subset(stringr::words, "([a-z][a-z]).*\\1")
 ```
 
 Contain one letter repeated in at least three places (e.g. "eleven" contains three "e"s.)
