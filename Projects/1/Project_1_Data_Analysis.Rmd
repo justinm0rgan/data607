@@ -1,0 +1,39 @@
+---
+title: "Project 1 - Data Analysis"
+author: "Justin Williams"
+date: "2/21/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Project 1 - Data Analysis
+This is Project 1 for DATA 607. 
+
+##  Overview
+In this project, we were given a text file with chess tournament results where the information has some structure. Our job is to create an R Markdown file that generates a .CSV file (that could for example be imported into a SQL database)
+with the following information for all of the players:
+
+- Player’s Name
+- Player’s State
+- Total Number of Points
+- Player’s Pre-Rating
+- Average Pre Chess Rating of Opponents
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
