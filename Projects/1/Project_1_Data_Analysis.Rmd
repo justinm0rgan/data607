@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 This is Project 1 for DATA 607. 
 
 ##  Overview
-In this project, we were given a text file with chess tournament results where the information has some structure. Our job is to create an R Markdown file that generates a .CSV file (that could for example be imported into a SQL database)
+In this project, we were given a text file with chess tournament results where the information had a cross-table structure. Our job was to create an R Markdown file that generates a .CSV file (that could for example be imported into a SQL database)
 with the following information for all of the players:
 
 - Player’s Name
@@ -22,18 +22,95 @@ with the following information for all of the players:
 - Player’s Pre-Rating
 - Average Pre Chess Rating of Opponents
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Here is an example of what the file looks like:
 
-```{r cars}
-summary(cars)
+![image text-file-example](https://github.com/justinm0rgan/data607/blob/main/Projects/1/data/txtfileex.jpg)
+## Read in data
+```{r read-in-text-data}
+library(tidyverse)
+df <- read_csv("https://raw.githubusercontent.com/justinm0rgan/data607/main/Projects/1/data/7645617.txt", show_col_types = F, skip = 1)
 ```
 
-## Including Plots
+## Create dataframe
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+Create empty data frame with correct data types and final structure.
+```{r create-empty-df}
+df2 <- data.frame(matrix(ncol = 6, nrow = 64))
+colnames(df2) <- c("num", "name", "state", "total_pts", "pre_rating", "avg_rating_opp")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Clean data
+
+Steps to clean data:
+### 1. Filter every 3rd row to exclude dashed line
+```{r filter-rows}
+df <- df %>% 
+  filter((row_number() %% 3 == 0) | (row_number() %% 3 == !0))
+```
+
+Preview df
+```{r}
+df
+```
+### 2. Isolate rows with `num`, `name` and `total_pts` data.
+Use `regex` to extract appropriate data for each column.
+```{r get-num-name-pts}
+df_num_name_pts <-  df %>% 
+  filter(row_number() %% 2 == 0)
+
+head(df_num_name_pts)
+```
+```{r get-num-col}
+df2$num <- df_num_name_pts$`Pair | Player Name                     |Total|Round|Round|Round|Round|Round|Round|Round|` %>% 
+  str_extract("^.{2}") %>% 
+  trimws() %>% 
+  as.numeric()
+```
+
+```{r get-name-col}
+df2$name <- df_num_name_pts$`Pair | Player Name                     |Total|Round|Round|Round|Round|Round|Round|Round|` %>% 
+  str_extract("([A-Z]+\\s[A-Z]+) | ([A-Z]+\\s[A-Z]+\\s[A-Z]+)") %>% 
+  trimws()
+```
+
+```{r get-pts-col}
+df2$total_pts <- df_num_name_pts$`Pair | Player Name                     |Total|Round|Round|Round|Round|Round|Round|Round|` %>% 
+  str_extract("\\d\\.\\d") %>% 
+  as.numeric()
+```
+
+### 3. Isolate rows with `state` and `pre_rating`.
+```{r get-state-pre-rating}
+df_get_state_pre <- df[-1,] #delete first row
+df_get_state_pre <- df_get_state_pre %>%   
+  filter(row_number() %% 2 == 0)
+
+head(df_get_state_pre)
+```
+
+```{r get-state}
+df2$state <- df_get_state_pre$`Pair | Player Name                     |Total|Round|Round|Round|Round|Round|Round|Round|` %>% 
+  str_extract("[A-Z]+")
+```
+
+```{r get-pre-rating}
+df2$pre_rating <- df_get_state_pre$`Pair | Player Name                     |Total|Round|Round|Round|Round|Round|Round|Round|` %>% 
+  str_extract("(\\d+).*?(\\d+)") %>% 
+  str_sub(15,19) %>% 
+  trimws() %>% 
+  as.numeric()
+```
+
+###4. Create columns to obtain `avg_rating_opp`.
+```{r extract-opponents}
+# this is accurate, will have to think of another technique
+# maybe create an entire df dedicated just to this then match up with main df?
+df_num_name_pts$`Pair | Player Name                     |Total|Round|Round|Round|Round|Round|Round|Round|` %>% 
+  str_extract("\\s\\d{1,2}.*?\\d{1,2}.*?\\d{1,2}.*?\\d{1,2}.*?\\d{1,2}.*?\\d{1,2}.*?\\d{1,2}")
+```
+
+
+```{r}
+df2
+```
+
