@@ -58,7 +58,7 @@ Use `regex` to extract appropriate data for each column.
 df_num_name_pts <-  df %>% 
   filter(row_number() %% 2 == 0)
 
-head(df_num_name_pts)
+df_num_name_pts
 ```
 ```{r get-num-col}
 df2$num <- df_num_name_pts$`Pair | Player Name                     |Total|Round|Round|Round|Round|Round|Round|Round|` %>% 
@@ -101,14 +101,53 @@ df2$pre_rating <- df_get_state_pre$`Pair | Player Name                     |Tota
   as.numeric()
 ```
 
-###4. Create columns to obtain `avg_rating_opp`.
-```{r extract-opponents}
-# this is accurate, will have to think of another technique
-# maybe create an entire df dedicated just to this then match up with main df?
-df_num_name_pts$`Pair | Player Name                     |Total|Round|Round|Round|Round|Round|Round|Round|` %>% 
-  str_extract("\\s\\d{1,2}.*?\\d{1,2}.*?\\d{1,2}.*?\\d{1,2}.*?\\d{1,2}.*?\\d{1,2}.*?\\d{1,2}")
+###4. Create data frame to calculate `avg_rating_opp` and add to main data frame.
+```{r create-opponents-df}
+# extract rounds with opponent numbers
+df_opp <- df_num_name_pts$`Pair | Player Name                     |Total|Round|Round|Round|Round|Round|Round|Round|` %>% 
+  str_extract_all("\\s\\d{1,2}.*", simplify = T) %>% 
+  data.frame()
+
+# create oppoenent df
+df_opp <- read.csv(text=sub(
+  "\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)$", 
+  ",\\1,\\2,\\3,\\4,\\5,\\6", df_opp$.), 
+        col.names=c('rnd1', 'rnd2', 'rnd3','rnd4','rnd5','rnd6','rnd7'), header=FALSE)
+
+# set player id
+df_opp$player_id <- 1:nrow(df_opp)
+
+# rearrange
+df_opp <- df_opp %>% 
+  select(player_id, rnd1, rnd2, rnd3, rnd4, rnd5, rnd6, rnd7)
+
+df_opp
 ```
 
+```{r create-df-player-opponent}
+# extract numbers from each column
+df_opp <- df_opp %>% 
+  as_tibble() %>% 
+  mutate(across(.cols = rnd1:rnd7, .fns=str_extract, pattern = "\\d+"))
+
+#  change dtype of columns to numeric
+df_opp <- df_opp %>% 
+  mutate(across(.cols = rnd1:rnd7, .fns = as.numeric))
+
+df_opp
+```
+```{r join-df}
+# join to look up pre-rating
+df_opp <- left_join(df_opp, df2, by = c("player_id" = "num"))
+
+# select only columns needed
+df_opp <- df_opp %>% 
+  select(player_id, pre_rating, rnd1, rnd2, rnd3, rnd4, rnd5, rnd6, rnd7)
+
+df_opp
+```
+
+Maybe write a custom function to look up the values of all the pre-ratings.
 
 ```{r}
 df2
