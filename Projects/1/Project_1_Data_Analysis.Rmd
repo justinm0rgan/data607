@@ -6,28 +6,30 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, comment = " ")
 ```
-
-# Project 1 - Data Analysis
-This is Project 1 for DATA 607. 
 
 ##  Overview
 In this project, we were given a text file with chess tournament results where the information had a cross-table structure. Our job was to create an R Markdown file that generates a .CSV file (that could for example be imported into a SQL database)
 with the following information for all of the players:
 
-- Player’s Name
-- Player’s State
-- Total Number of Points
-- Player’s Pre-Rating
-- Average Pre Chess Rating of Opponents
+- **Player’s Name**
+- **Player’s State**
+- **Total Number of Points**
+- **Player’s Pre-Rating**
+- **Average Pre Chess Rating of Opponents**
 
 Here is an example of what the file looks like:
 
-![image text-file-example](https://github.com/justinm0rgan/data607/blob/main/Projects/1/data/txtfileex.jpg)
+![image text-file-example](./data/txtfileex.jpg)
+
 ## Read in data
-```{r read-in-text-data}
+#### Load necessary packages
+```{r load-packages, message=FALSE}
 library(tidyverse)
+```
+
+```{r read-in-text-data}
 df <- read_csv("https://raw.githubusercontent.com/justinm0rgan/data607/main/Projects/1/data/7645617.txt", show_col_types = F, skip = 1)
 ```
 
@@ -41,24 +43,21 @@ colnames(df2) <- c("num", "name", "state", "total_pts", "pre_rating", "avg_ratin
 
 ## Clean data
 
-Steps to clean data:
-### 1. Filter every 3rd row to exclude dashed line
+### Steps to clean data:
+
+#### 1. Filter every 3rd row to exclude dashed line
 ```{r filter-rows}
 df <- df %>% 
   filter((row_number() %% 3 == 0) | (row_number() %% 3 == !0))
 ```
 
-Preview df
-```{r}
-df
-```
-### 2. Isolate rows with `num`, `name` and `total_pts` data.
+#### 2. Isolate rows with `num`, `name` and `total_pts` data.
 Use `regex` to extract appropriate data for each column.
-```{r get-num-name-pts}
+```{r create-num-name-pts-df}
 df_num_name_pts <-  df %>% 
   filter(row_number() %% 2 == 0)
 
-df_num_name_pts
+head(df_num_name_pts)
 ```
 ```{r get-num-col}
 df2$num <- df_num_name_pts$`Pair | Player Name                     |Total|Round|Round|Round|Round|Round|Round|Round|` %>% 
@@ -79,8 +78,8 @@ df2$total_pts <- df_num_name_pts$`Pair | Player Name                     |Total|
   as.numeric()
 ```
 
-### 3. Isolate rows with `state` and `pre_rating`.
-```{r get-state-pre-rating}
+#### 3. Isolate rows with `state` and `pre_rating`.
+```{r create-state-pre-rating-df}
 df_get_state_pre <- df[-1,] #delete first row
 df_get_state_pre <- df_get_state_pre %>%   
   filter(row_number() %% 2 == 0)
@@ -101,7 +100,7 @@ df2$pre_rating <- df_get_state_pre$`Pair | Player Name                     |Tota
   as.numeric()
 ```
 
-###4. Create data frame to calculate `avg_rating_opp` and add to main data frame.
+#### 4. Create data frame to calculate `avg_rating_opp`.
 ```{r create-opponents-df}
 # extract rounds with opponent numbers
 df_opp <- df_num_name_pts$`Pair | Player Name                     |Total|Round|Round|Round|Round|Round|Round|Round|` %>% 
@@ -121,9 +120,9 @@ df_opp$player_id <- 1:nrow(df_opp)
 df_opp <- df_opp %>% 
   select(player_id, rnd1, rnd2, rnd3, rnd4, rnd5, rnd6, rnd7)
 
-df_opp
+head(df_opp)
 ```
-
+##### a. Extract numbers (opponent) from each column
 ```{r create-df-player-opponent}
 # extract numbers from each column
 df_opp <- df_opp %>% 
@@ -134,22 +133,43 @@ df_opp <- df_opp %>%
 df_opp <- df_opp %>% 
   mutate(across(.cols = rnd1:rnd7, .fns = as.numeric))
 
-df_opp
+head(df_opp)
 ```
-```{r join-df}
-# join to look up pre-rating
-df_opp <- left_join(df_opp, df2, by = c("player_id" = "num"))
+##### b. Match `pre-rating` from main data frame to opponents data frame.
 
-# select only columns needed
+```{r match-create-oppenent-pre-rating}
+df_opp$rnd1_opp <- df2$pre_rating[match(df_opp$rnd1, df2$num)]
+df_opp$rnd2_opp <- df2$pre_rating[match(df_opp$rnd2, df2$num)]
+df_opp$rnd3_opp <- df2$pre_rating[match(df_opp$rnd3, df2$num)]
+df_opp$rnd4_opp <- df2$pre_rating[match(df_opp$rnd4, df2$num)]
+df_opp$rnd5_opp <- df2$pre_rating[match(df_opp$rnd5, df2$num)]
+df_opp$rnd6_opp <- df2$pre_rating[match(df_opp$rnd6, df2$num)]
+df_opp$rnd7_opp <- df2$pre_rating[match(df_opp$rnd7, df2$num)]
+```
+
+```{r select-columns-needed}
 df_opp <- df_opp %>% 
-  select(player_id, pre_rating, rnd1, rnd2, rnd3, rnd4, rnd5, rnd6, rnd7)
-
-df_opp
+  select(player_id, rnd1_opp:rnd7_opp)
 ```
 
-Maybe write a custom function to look up the values of all the pre-ratings.
+###### c. Get row mean
+```{r get-row-mean}
+df_opp$opp_mean <- df_opp[,2:8] %>% 
+  rowMeans(na.rm = T) %>% 
+  round(3)
 
-```{r}
-df2
+head(df_opp)
 ```
 
+#### 5. Look up Average Opponent Pre-Rating
+```{r look-up-pre-rating}
+df2$avg_rating_opp <-  df_opp$opp_mean[match(df_opp$player_id, df2$num)]
+
+head(df2)
+```
+
+### Export final product to csv
+```{r export-to-csv}
+df2 %>% 
+  write_csv('./data/cleaned_chess_data.csv')
+```
