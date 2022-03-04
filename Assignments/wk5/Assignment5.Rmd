@@ -1,0 +1,53 @@
+---
+title: "Assignment 5 - Tidying and Transforming Vaccination Data"
+author: "Justin Williams"
+date: "3/4/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, results=FALSE}
+library(tidyverse)
+library(readxl)
+```
+
+## Overview
+
+We were asked to analyze data from August 2021 Israeli hospitalization ("Severe Cases") rates for pople under 50(assume "50 and under") and over 50, for both un-vaccinated and fully faccinated populations. Specific questions are as follows:
+*1) Do you have enough information to calculate the total population? What does this total population represent?*
+*2) Calculate the Efficacy vs. Disease; Explain your results.*
+*3) From your calculation of efficacy vs. disease, are you able to compare the rate of severe cases in unvaccinated individuals to that in vaccinated individuals?*
+
+<u>**Definitions**</u>
+Severe Cases = hospitatlized
+Efficacy vs. sever disease = 1 - (% fully vaxed sever cases per 100k / % not vaxed sever cases per 100k)
+
+### Additional domain knowledge needed
+1) Israel's total population
+According to <a href="https://en.wikipedia.org/wiki/Israel">Wikipedia</a> the 2022 population estimate is 9,481,820
+
+2) Who is eligible to receive vaccinations
+
+According to an article in <a href="https://www.usnews.com/news/health-news/articles/2021-02-04/all-israelis-over-16-are-eligible-for-coronavirus-vaccine">US News</a> as of Feb 4th 2021 everyone over the age of 16 is eligivle to receive a vaccine in Israel.
+
+3) What does it mean to be fully vaccinated
+
+## Read in data
+
+```{r load-data}
+read_excel("./data/israeli_vaccination_data_analysis_start.xlsx",
+           range = "A1:F6")
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
