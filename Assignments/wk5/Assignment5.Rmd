@@ -9,45 +9,299 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, results=FALSE}
+```{r, message=FALSE}
 library(tidyverse)
 library(readxl)
+library(reshape)
 ```
 
 ## Overview
 
-We were asked to analyze data from August 2021 Israeli hospitalization ("Severe Cases") rates for pople under 50(assume "50 and under") and over 50, for both un-vaccinated and fully faccinated populations. Specific questions are as follows:
-*1) Do you have enough information to calculate the total population? What does this total population represent?*
+We were asked to analyze data from August 2021 Israeli hospitalization ("Severe Cases") rates for pople under 50 (assume "50 and under") and over 50, for both unvaccinated and fully vaccinated populations. 
+
+Specific questions were as follows:
+
+<b>*1) Do you have enough information to calculate the total population? What does this total population represent?*
+
 *2) Calculate the Efficacy vs. Disease; Explain your results.*
-*3) From your calculation of efficacy vs. disease, are you able to compare the rate of severe cases in unvaccinated individuals to that in vaccinated individuals?*
+
+*3) From your calculation of efficacy vs. disease, are you able to compare the rate of severe cases in unvaccinated individuals to that in vaccinated individuals?*</b>
 
 <u>**Definitions**</u>
-Severe Cases = hospitatlized
-Efficacy vs. sever disease = 1 - (% fully vaxed sever cases per 100k / % not vaxed sever cases per 100k)
+
+*Severe Cases* = hospitalized<br>
+*Efficacy vs. severe disease* = 1 - (% fully vaccinated severe cases per 100k / % not vaccinated severe cases per 100k)
 
 ### Additional domain knowledge needed
-1) Israel's total population
+*1) Israel's total population*
+
 According to <a href="https://en.wikipedia.org/wiki/Israel">Wikipedia</a> the 2022 population estimate is 9,481,820
 
-2) Who is eligible to receive vaccinations
+*2) Who is eligible to receive vaccinations*
 
-According to an article in <a href="https://www.usnews.com/news/health-news/articles/2021-02-04/all-israelis-over-16-are-eligible-for-coronavirus-vaccine">US News</a> as of Feb 4th 2021 everyone over the age of 16 is eligivle to receive a vaccine in Israel.
+According to an article in <a href="https://www.thelancet.com/journals/lanepe/article/PIIS2666-7762(21)00220-9/fulltext">The Lancet</a> as of June 2021 everyone over the age of 12 was eligible to receive a vaccine in Israel.
 
-3) What does it mean to be fully vaccinated
+*3) What does it mean to be fully vaccinated*
+
+The Wall Street Journal released an artice in August 2021 entitled: <a href="https://www.wsj.com/articles/in-israel-being-fully-vaccinated-now-means-three-shots-11630426257">In Israel, Being Fully Vaccinated Now Means Three Shots</a>, so this would lead me to believe being fully vaccinated means 3 shots, as opposed to the previously accepted 2 shots. However, being that the data for analysis was as of August 2021, fully vaccinated probably means at least 2 shots. 
 
 ## Read in data
 
 ```{r load-data}
-read_excel("./data/israeli_vaccination_data_analysis_start.xlsx",
-           range = "A1:F6")
+df <- read_excel("./data/israeli_vaccination_data_analysis_start.xlsx",
+           range = "A3:E6",
+           col_names = c("age","not_vax","fully_vax","sev_not_vax_100k","sev_fully_vax_100k"))
+
+df
+```
+## Reconfigure data
+I would like to see the data frame transformed a bit, i.e. vaccination status rates, and age become their own columns.
+
+```{r create-cols}
+# create cols
+df$not_vax_pop_rate <- ""
+df$vax_pop_rate <- ""
+df
 ```
 
-## Including Plots
+```{r reconfigure-rate}
+# move rate values into correct cols
+df$not_vax_pop_rate[1] <-  df$not_vax[2] 
+df$vax_pop_rate[1] <- df$fully_vax[2]
+df$not_vax_pop_rate[3] <-df$not_vax[4]
+df$vax_pop_rate[3] <- df$fully_vax[4]
 
-You can also embed plots, for example:
+# convert new cols to numeric
+df$not_vax_pop_rate <- as.numeric(df$not_vax_pop_rate)
+df$vax_pop_rate <- as.numeric(df$vax_pop_rate)
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+# remove unecessary rows
+df <- df[-c(2,4),]
+
+df <- as.data.frame(df)
+
+df
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Melt
+
+Melt the data frame to get 4 rows with age and vaccination status
+```{r melt-df}
+df_melt <- melt(df,id=c("age", "not_vax_pop_rate", "vax_pop_rate", "sev_not_vax_100k","sev_fully_vax_100k"),
+     variable_name = "vax_status")
+
+df_melt %>% 
+  select(age,vax_status, everything())
+```
+Move rate values into their own columns.
+```{r move-rate}
+# create pop rate col
+df_melt$pop_rate[1] <- df_melt$not_vax_pop_rate[1]
+df_melt$pop_rate[2] <- df_melt$not_vax_pop_rate[2]
+df_melt$pop_rate[3] <- df_melt$vax_pop_rate[1]
+df_melt$pop_rate[4] <- df_melt$vax_pop_rate[2]
+
+# create sev_rate_100k col
+df_melt$sev_case_100[1] <- df_melt$sev_not_vax_100k[1]
+df_melt$sev_case_100[2] <- df_melt$sev_not_vax_100k[2]
+df_melt$sev_case_100[3] <- df_melt$sev_fully_vax_100k[1]
+df_melt$sev_case_100[4] <- df_melt$sev_fully_vax_100k[2]
+
+# delete unecessary columns
+df_melt <- df_melt[,-c(2:5)]
+
+# rename value to pop
+df_melt <- df_melt %>% 
+  rename(replace = c("value" = "pop"))
+
+df_melt
+```
+## What story does the cleaned data tell us?
+
+```{r percent-vax-age}
+# plot pop rate vs age and vax status
+ggplot(df_melt, aes(x = age, y = pop_rate, fill = vax_status)) +
+  geom_bar(stat = 'identity') +
+  labs(x = "Age", y = "Pop rate", subtitle = "Pop rate by Vax status & Age") +
+  scale_fill_discrete(name = "Vax Status", labels = c("Not Vax", "Fully Vax")) +
+  coord_flip()
+```
+
+Looking at the data grouped by age and population rate fully vaccinated vs not, we can clearly see that a larger percentage (~90 vs. ~73) of those `>50` are fully vaccinated against COVID-19. However, these are stacked bar charts, and one can see that they are not up too 100%, there must be some other data unaccounted for. Let's come back to this.
+
+Let's take a look at vaccination status and age in relation to severe cases of COVID-19.
+
+```{r sev_case_age-vax_status}
+# plot severe case vs age and vax status
+ggplot(df_melt, aes(x = sev_case_100, y = age, fill = vax_status)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Severe Case 100k", y = "Age", subtitle = "Severe case (per 100k) by Vax status & Age" ) +
+  scale_fill_discrete(name = "Vax Status", labels = c("Not Vax", "Fully Vax"))
+```
+
+Looking at the data like this, it gives the impression that in folks >50 and fully vaccinated for COVID-19, had an increased risk of severe cases in comparison to those >50 not vaccinated. 
+
+Well, let's look at how Severe Cases per 100k are calculated.
+
+## Severe Cases
+__How are severe cases calculated?__
+
+The data gives the quantity of severe cases per 100,000 people. However, to reflect rate we need to calculate incidence rate, or rate of severe cases per 100,000 people.
+
+Incidence rate is calculated by the following:
+
+**severe case incidence rate = # of severe cases / pop at risk**
+
+Therefore, in the case of those >50 that are vaccinated with a population base of ~2.1 mm and 290 severe cases the calculation would be done as such:
+
+*290 / 2,133,516 = 0.00013593 x 100000 = 13.6 incidence rate*
+
+Those that are not vaccinated and >50 have a population base of ~186k with 171 severe cases:
+
+*171 / 186,078 = 0.00091897  X 100000 = 91.9 incidence rate*
+
+This means that in fully vaccinated people >50, there will be ~13 severe cases per 100,000. In people >50 that are not vaccinated, there will be ~91 severe cases  per 100,000. So despite severe case count in those vaccinated being higher then those no vaccinated, the incidence rate is much higher in those not vaccinated. Therefore, not getting vaccinated for COVID-19 puts one at greater risk for developing a severe case. 
+
+Let's create a column for Severe Case Incidence Rate to visualize this metric in rates as opposed to count.
+
+```{r severe-case-rate}
+df_melt <- df_melt %>% 
+  mutate(sev_case_rate_100k = sev_case_100/pop * 100000)
+
+df_melt %>% 
+  arrange(age)
+```
+Now if we view severe cases per 100,000 by rate, the data tells a different story.
+
+```{r severe-case-rate-visual}
+# plot severe case incidence rate per 100k vs age and vax status
+ggplot(df_melt, aes(x = sev_case_rate_100k, y = age, fill = vax_status)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+    labs(x = "Severe Case Incidence rate per 100k", y = "Age", subtitle = "Severe case incidence rate (per 100k) by Vax status & Age" ) +
+  scale_fill_discrete(name = "Vax Status", labels = c("Not Vax", "Fully Vax"))
+```
+
+Here we can see that those folks not vaccinated in either age group have a much higher Severe Case Incidence Rate per 100,000. The discrepancy is staggering the >50 age group.
+
+----------
+## Find the missing part of population
+
+Remember the stacked bar charts when we looked at population rate, grouped by age and vaccination status? Well they didn't equate to 100%, so some data was missing.
+Let's quantify and explain that missing portion of data.
+
+```{r missing-pop-data}
+# add other to levels in factor column vax_status
+levels(df_melt$vax_status) <- c("not_vax", "fully_vax", "other")
+
+# add rows
+df_melt[nrow(df_melt)+1,] <- c("<50","other",0,0,NA,NA)
+df_melt[nrow(df_melt)+1,] <- c(">50","other",0,0,NA,NA)
+
+# change columns to numeric
+cols.num <- c("pop", "pop_rate","sev_case_100", "sev_case_rate_100k")
+df_melt[cols.num] <- sapply(df_melt[cols.num], as.numeric)
+
+df_melt %>% 
+  arrange(age)
+```
+
+Calculate `pop_rate`  for `vax_status` == other
+```{r calc-pop_rate}
+# calc pop_rate for <50
+df_melt$pop_rate[df_melt$vax_status == "other" & df_melt$age == "<50"] <- 1-sum(df_melt[df_melt$age == "<50",]$pop_rate)
+
+# calc pop_rate for >50
+df_melt$pop_rate[df_melt$vax_status == "other" & df_melt$age == ">50"] <-  1-sum(df_melt[df_melt$age == ">50",]$pop_rate)
+```
+
+Calculate `pop` for `vax_status` == other
+```{r calc-pop}
+# calculate pop for <50
+df_melt$pop[df_melt$vax_status == "other" & df_melt$age == "<50"] <- (sum(df_melt[df_melt$age == "<50",]$pop) / sum(df_melt[df_melt$age == "<50" & df_melt$vax_status != "other",]$pop_rate)) - sum(df_melt[df_melt$age == "<50",]$pop)
+
+# calculate pop for >50
+df_melt$pop[df_melt$vax_status == "other" & df_melt$age == ">50"] <- (sum(df_melt[df_melt$age == ">50",]$pop) / sum(df_melt[df_melt$age == ">50" & df_melt$vax_status != "other",]$pop_rate)) - sum(df_melt[df_melt$age == ">50",]$pop)
+
+df_melt %>% 
+  arrange(age)
+```
+
+```{r total-pop}
+tot_pop <- sum(df_melt$pop)
+cat("Total population now equates to",tot_pop)
+```
+Unfortunately, the total population even with the missing data in `pop_rate` accounted for, does not equate to the ~9mm. This leads me to believe the missing data derived from `pop_rate` not equating to 100, are folks not fully vaccinated, but  have received at least one dose, and the ~2mm extra are folks ineligible i.e. <12 years of age and religious exempt.
+
+### Visualize with 3rd variable in `vax_status`
+
+Let's look at the same bar chart with the third categorical variable in `vax_status`.
+```{r pop_rate-age-vax}
+ggplot(df_melt, aes(x = age, y = pop_rate, fill = vax_status)) +
+  geom_bar(stat = 'identity') +
+  coord_flip() +
+      labs(x = "Age", y = "Pop rate", subtitle = "Pop rate by Age & Vax status" ) +
+  scale_fill_discrete(name = "Vax Status", labels = c("Not Vax", "Fully Vax", "Other"))
+```
+
+Now we see the stacked bar charts equate to 1, or 100% of the population.
+Here we can see the is a small percentage of `other` in vaccination status in each age group. These could be folks that were not fully vaccinated but received at least one dose of the COVID-19 vaccine.
+
+## Calculate efficacy rate
+
+Efficacy rate is calculated by taking the risk in the not vaccinated group, minus the risk among the fully vaccinated, divided by the risk among the not vaccinated.
+
+So for `>50` folks it would be:
+
+__~91 - ~13.5 / ~91 = 0.85__
+
+or
+
+__85%__ vaccine efficacy
+
+For folks `<50`:
+
+__~3.85 - 0.31 / ~3.85 = 0.92__
+
+or
+
+__92%__ vaccine efficacy
+
+```{r efficacy-rate}
+# create efficacy rate col
+df_melt$eff_rate <- ""
+
+# calc efficacy rate for >50
+df_melt[df_melt$age == ">50" & df_melt$vax_status != "other",]$eff_rate <- (df_melt[df_melt$age == ">50" & df_melt$vax_status == "not_vax",]$sev_case_rate_100k - df_melt[df_melt$age == ">50" & df_melt$vax_status == "fully_vax",]$sev_case_rate_100k) / df_melt[df_melt$age == ">50" & df_melt$vax_status == "not_vax",]$sev_case_rate_100k
+
+# calc efficacy rate for <50
+df_melt[df_melt$age == "<50" & df_melt$vax_status != "other",]$eff_rate <- (df_melt[df_melt$age == "<50" & df_melt$vax_status == "not_vax",]$sev_case_rate_100k - df_melt[df_melt$age == "<50" & df_melt$vax_status == "fully_vax",]$sev_case_rate_100k) / df_melt[df_melt$age == "<50" & df_melt$vax_status == "not_vax",]$sev_case_rate_100k
+
+# convert to numeric
+df_melt$eff_rate <- as.numeric(df_melt$eff_rate)
+
+df_melt
+```
+Now let's visualize efficacy rate for severe cases.
+
+```{r vaccine-efficacy-rate, warning=FALSE}
+ggplot(df_melt, aes(x = eff_rate, y = age, fill = age)) +
+  geom_bar(stat = 'identity', position = position_dodge()) +
+  geom_text(aes(label = round(eff_rate,2)), hjust = 1.2, color = "white") +
+  labs(y = "Age", x = "Efficacy Rate", subtitle = "Efficacy Rate by Age" )
+```
+
+Therefore, we can see the vaccines efficacy rate against severe cases of COVID-19 for folks `>50` is 7% less then those `<50`. Still good efficacy rates for both age brackets, which would lead me to reccomend vaccination for those inclined
+
+## Conclusion
+
+<b>*1) Do you have enough information to calculate the total population? What does this total population represent?*</b>
+
+I believe I did have enough information to calculate the total population, however when I filled in the missing values it came to ~7mm, and according to Wikipedia it should be ~9mm. So that leads me to believe that the total population prior to the missing values were those not vaccinated or fully vaccinated and the missing part of the population were those partially vaccinated. Whereas the other ~2mm were folks ineligible i.e. <12 years of age or religious exemptions. 
+
+<b>*2) Calculate the Efficacy vs. Disease; Explain your results.*</b>
+
+The calculation of Efficacy vs Disease in this case is only against Severe Disease or those hospitalized due to COVID-19. As explained above, the efficacy rate for those `>50` is 85% and those `<50` 92%. Despite the misleading presentation of the initial data frame, it is still highly recommended to get the vaccine. Both efficacy rates regardless of age bracket, are extremely preventative against severe cases. 
+
+<b>*3) From your calculation of efficacy vs. disease, are you able to compare the rate of severe cases in unvaccinated individuals to that in vaccinated individuals?*</b>
+
+Yes, I was able to compare this prior to obtaining efficacy rate, by doing a reverse calculation for incidence rate. We were given the amount of cases per 100,00 people, therefore imputing the numerator and dividing by population at risk to obtain incidence rate of severe disease per 100,000 people.
