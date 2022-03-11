@@ -9,12 +9,13 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r load-packages}
+```{r load-packages, message=FALSE}
 library(tidyverse)
 library(dotenv)
 library(RSocrata)
 library(scales)
 library(usmap)
+library(lubridate)
 ```
 
 ## Overivew
@@ -157,6 +158,7 @@ df_tot_deaths %>%
     theme(legend.position = 'none')
 ```
 
+# This section may have to be abandoned due to time constraints
 ## Simple map
 
 Built is pacakge `usmaps` will suffice for this.
@@ -174,12 +176,11 @@ NYS_tot_deaths <- sum(df_tot_deaths$tot_death[df_tot_deaths$state == "NY" | df_t
 NYS_death_rate <- sum(df_tot_deaths$death_rate[df_tot_deaths$state == "NY" | df_tot_deaths$state == "NYC"])/2
 
 #Latest date
-dateLatest = as.POSIXct(max(df_tot_deaths$submission_date), origin = "1970-01-01 00:00:00 UTC")
-
+dateLatest = as.POSIXct(max(df_tot_deaths$submission_date), origin = "1970-01-01", tz = "UTC")
 dateLatest
 
 # add new york summed row
-df_tot_deaths <-  rbind(df_tot_deaths, dateLatest, "NYS", NYS_tot_cases, NYS_tot_deaths, NYS_death_rate)
+rbind(df_tot_deaths, dateLatest, "NYS", NYS_tot_cases, NYS_tot_deaths, NYS_death_rate)
 
 # remove separate ny and nyc
 df_tot_deaths_ny <- subset(df_tot_deaths, state != "NYC" & state !="NY")
@@ -206,12 +207,17 @@ plot_usmap(data = statepop, values = "pop_2015", color = "blue") +
 statepop
 ```
 
-Next step would be to scrape the data from <a href="https://en.wikipedia.org/wiki/List_of_U.S._states_and_territories_by_population"> Wikipedia </a> to compare as a rate.
-
 ## Question 2
 ### Compare death rate before and after vaccine being released
 
 According to <a href="https://www.fda.gov/news-events/press-announcements/fda-takes-key-action-fight-against-covid-19-issuing-emergency-use-authorization-first-covid-19">FDA.gov</a>, the First COVID-19 Vaccine was authorized on **Dec 11th, 2020**. This was for emergency use only, however for simplicity sake we will use this as a place marker for this study. 
+
+In this analysis we will use what the World Health Organization defines as <a href="https://www.who.int/news-room/commentaries/detail/estimating-mortality-from-covid-19">Infection fatality ratio (IFR)</a> as our death rate. T
+
+This is calculated by:
+
+$$\text{Infection fatality ratio (IFR, in %) = }\frac{\text {Number of deaths from  disease}}{\text{Number of infected  individuals}} \text{x 100}$$
+They note that the true severity of a disease can be described by the Infection Fatality Ratio.
 
 ```{r before-vax}
 df_before_vax <- df %>% 
@@ -276,6 +282,20 @@ df_death_rate_sum
 ggplot(df_death_rate_sum, aes(x=death_rate, y= vax_status, fill = vax_status)) +
   geom_bar(stat = 'identity')
 ```
+## Conclusion
+
+### Question 1
+
+**Which states had the most and least deaths?**
+
+- While California had the most deaths, the death rate (total cases / total deaths) was highest in NYC
+- Least deaths in the continental United States was Vermont with ~600, they also were in the *bottom 10* for lowest death rate. Utah was first in lowest death rate with ~0.0045.
+
+### Question 2
+
+**What was the death rate before and after the vaccine was released?**
+
+- If we use December 11th 2020 as the after vaccination date, the aggregate death rate for the entire data set is 0.016 before the vaccine was released, and 0.010 after. So we see a pretty significant decrease in total death rate after the vaccine was released. 
 
 
 
