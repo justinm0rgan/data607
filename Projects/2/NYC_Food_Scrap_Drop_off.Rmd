@@ -1,0 +1,90 @@
+---
+title: "NYC Food Scrap Drop Off"
+author: "Justin Williams"
+date: "3/10/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r results=FALSE}
+library(tidyverse)
+library(dotenv)
+```
+
+## Overview
+
+In April 2020 <a href="https://www1.nyc.gov/assets/dsny/site/resources/press-releases/nyc-sanitation-announces-service-changes-related-to-covid-19-budget-cuts"> NYC Sanitation announced service changes</a> to their Curbside Composting program related to COVID-19 budget cuts. This meant any residents that were lucky enough to be able to partake in this greenhouse gas saving program, were cut off. Luckily some organizations rose to the challenge and began accepting food scrap drop-offs. For example in Greenpoint where I reside, <a href=" https://northbrooklynmutualaid.org/"> North Brooklyn Mutual Aid </a> started accepting food scraps in both <a href="https://www.nycgovparks.org/parks/msgr-mcgolrick-park"> Mcgolrick </a>, <a href="https://www.nycgovparks.org/parks/cooper-park"> Cooper </a> and <a href="https://www.nycgovparks.org/parks/transmitter-park"> Transmitter </a> parks. This enabled residents to minimize their environmental compost even when the city wasn't able to facitilate. As of August 2021 the Curbside Composting is back in effect, however it only services the following Community Boards:
+
+<u>**Brooklyn**</u>
+- 1, 2, 6 and 7
+
+<u>**Manhattan**</u>
+- 6 and 7
+
+<u>**Bronx**</u>
+- 8
+
+```{r}
+#could maybe have a map of shapefile with community boards here. 
+```
+
+That said, not only are their a bunch of volunteer organizations that accept food scraps, but there are also a plethora of community gardens even some urban farms that will take your food scraps.
+
+I wanted to do some exploratory data analysis to answer the following questions:
+
+-   Which Council Districts have the most drop-offs
+-   What do those have in common?
+-   What day/time is most popular for drop-off?
+-   How many are open year round?
+-   What do those have in common?
+-   Do any Community Districts have more then one drop-off? What about Census Tracts?
+-   Which borough has the most drop-offs
+
+The end result will be to develop a comprehensive understanding of where food-scrap drop off locations in NYC are located, and how the curbside composting program could work in collaboration with volunteer organizations to more equability offer its services.
+
+For more information on why composting is good for the environment, check out this <a href= "https://youtu.be/wBLC-LOa7W8"> video </a>. 
+
+## Read in data
+
+<a href="https://opendata.cityofnewyork.us/> Open Data NYC </a> has a plethora of free and easily downloadable datasets. For our purposes I will be downloading the <a href ="https://data.cityofnewyork.us/Environment/Food-Scrap-Drop-Off-Locations-in-NYC/if26-z6xq"> Food Scrap Drop-Off Locations in NYC </a>. As of March 2022 this was last updated on November, 16th 2021, so I will be using the <a href="https://dev.socrata.com/connectors/rsocrata.html"> Socrata </a> API to get the data so it can easily be downloaded if updated, to update this analysis in the future.
+
+First let's install the Socrata pacakge. 
+```{r install-socrata}
+if (!("RSocrata" %in% installed.packages())) {
+  install.packages("RSocrata")
+}
+
+library(RSocrata)
+```
+
+Then let's read in the data using the API:
+```{r read-in-data-socrata-api}
+# load api token
+load_dot_env()
+
+# read in data from api
+df <- read.socrata("https://data.cityofnewyork.us/resource/if26-z6xq.json",
+             app_token = Sys.getenv("SOCRATA_API"))
+
+# save df to data folder so not to over use API
+write_csv(df, './data/Food_Scrap_Drop-Off_Locations_in_NYC.csv')
+```
+
+Re-load in data frame.
+```{r load-data}
+# if we don't load it in as a gdf doesn't load point coordinates.
+read_csv("./data/Food_Scrap_Drop-Off_Locations_in_NYC.csv")
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

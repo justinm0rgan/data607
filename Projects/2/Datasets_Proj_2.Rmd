@@ -1,0 +1,35 @@
+---
+title: "Project 2 - Data Transformation"
+author: "Justin Williams"
+date: "3/7/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+Choose any three data sets in the week 5 discussion posts:
+
+1) <a href="https://data.cityofnewyork.us/Environment/Food-Scrap-Drop-Off-Locations-in-NYC/if26-z6xq"> Food scrap drop off</a>
+- Which Council Districts have the most drop-offs
+- What do those have in common?
+- What day/time is most popular for drop-off?
+- How many are open year round?
+- What do those have in common?
+- Do any Community Districts have more then one drop-off? What about Census Tracts?
+- Which borough has the most drop-offs
+
+2) <a href="https://data.cdc.gov/Case-Surveillance/United-States-COVID-19-Cases-and-Deaths-by-State-o/9mfq-cb36">CDC COVID-19 deaths and cases</a>
+
+- Find the state with the highest and lowest deaths 
+- Compare the death rate both before and after the vaccine was released
+
+
+3) <a href="https://www.imls.gov/research-evaluation/data-collection/public-libraries-survey"> Public Library Survey </a>
+- trends over time
+- services provided by libraries in large urban areas. 
+
+
