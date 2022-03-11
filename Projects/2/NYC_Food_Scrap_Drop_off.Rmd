@@ -9,9 +9,10 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r results=FALSE}
+```{r results=FALSE, message=FALSE}
 library(tidyverse)
 library(dotenv)
+library(sf)
 ```
 
 ## Overview
@@ -47,6 +48,31 @@ The end result will be to develop a comprehensive understanding of where food-sc
 
 For more information on why composting is good for the environment, check out this <a href= "https://youtu.be/wBLC-LOa7W8"> video </a>. 
 
+## Data Dictionary
+
+There are 17 columns in the dataset.
+See name, description and type below:
+
+| Column Name 	| Description 	| Type 	|  	|
+|---	|---	|---	|---	|
+| Borough 	| NYC Borough where vendor is located. New York City’s boroughs are five county-level administrative divisions, with each one also being a state county. 	| Plain Text 	|  	|
+| CouncilDist 	| NYC Council District Number. There are 51 Council districts throughout the five boroughs and is one is represented by an elected Council Member. 	| Number 	|  	|
+| Food_Scrap_Drop_Off_Site_Name 	| Name of food scrap drop-off location 	| Plain Text 	|  	|
+| Latitude 	| Latitude of food scrap drop-off location for mapping purposes. 	| Number 	|  	|
+| Location 	| Street address or cross streets associated with food scrap drop-off location 	| Plain Text 	|  	|
+| Longitude 	| Longitude of food scrap drop-off location for mapping purposes. 	| Number 	|  	|
+| NTAName 	| Neighborhood Tabulation Area Name. Neighborhood Tabulation Areas are small area boundaries that were initially created by the Department of City Planning for small area population projections. However, NTAs are now being used to present data from the Decennial Census and American Community Survey. 	| Plain Text 	|  	|
+| Notes 	| Additional site notes 	| Plain Text 	|  	|
+| Object ID 	| An ObjectID is a unique, not null integer field used to uniquely identify rows in tables in a geodatabase. 	| Plain Text 	|  	|
+| Operation_Day_Hours 	| Days of the week when food scraps can be dropped off. 	| Plain Text 	|  	|
+| Open_Months 	| Months when food scraps can be dropped off at the location. 	| Plain Text 	|  	|
+| Hosted_By 	| Name of the organization that services the food scraps that are dropped off. 	| Plain Text 	|  	|
+| Website 	| Website associated with food scrap drop-off location. 	| Plain Text 	|  	|
+| boroCD 	| Borough and Community District which is represented by a single-digit borough number followed by two-digit borough community district number. 	| Number 	|  	|
+| ct2010 	| Census Tract (CT2010). The 2010 census tract in which the tax lot is located. 	| Plain Text 	|  	|
+| point 	| Longitude and Latitude formatted for map "pin" 	| Point 	|  	|
+| Precinct 	| Police Precinct associated with food scrap drop-off location 	| Number 	|  	|
+
 ## Read in data
 
 <a href="https://opendata.cityofnewyork.us/> Open Data NYC </a> has a plethora of free and easily downloadable datasets. For our purposes I will be downloading the <a href ="https://data.cityofnewyork.us/Environment/Food-Scrap-Drop-Off-Locations-in-NYC/if26-z6xq"> Food Scrap Drop-Off Locations in NYC </a>. As of March 2022 this was last updated on November, 16th 2021, so I will be using the <a href="https://dev.socrata.com/connectors/rsocrata.html"> Socrata </a> API to get the data so it can easily be downloaded if updated, to update this analysis in the future.
@@ -61,7 +87,7 @@ library(RSocrata)
 ```
 
 Then let's read in the data using the API:
-```{r read-in-data-socrata-api}
+```{r read-in-data-socrata-api, warning=FALSE}
 # load api token
 load_dot_env()
 
@@ -69,19 +95,35 @@ load_dot_env()
 df <- read.socrata("https://data.cityofnewyork.us/resource/if26-z6xq.json",
              app_token = Sys.getenv("SOCRATA_API"))
 
+# convert to sf df
+df_sf <- df %>% 
+  st_as_sf(coords = c("latitude", "longitude"))
+
+# delete uneeded geometry columns from original df
+drops <- c("point.type", "point.coordinates")
+df_sf <- df_sf[, !(names(df_sf) %in% drops)]
+
 # save df to data folder so not to over use API
-write_csv(df, './data/Food_Scrap_Drop-Off_Locations_in_NYC.csv')
+st_write(df_sf, paste('./data/Food_Scrap_Drop-Off_Locations_in_NYC',Sys.Date(),'.shp', sep = ""))
 ```
 
 Re-load in data frame.
 ```{r load-data}
 # if we don't load it in as a gdf doesn't load point coordinates.
-read_csv("./data/Food_Scrap_Drop-Off_Locations_in_NYC.csv")
+df_sf <- read_sf("./data/Food_Scrap_Drop-Off_Locations_in_NYC2022-03-11.shp")
 ```
 
-## Including Plots
+## Analysis questions
 
-You can also embed plots, for example:
+Which Council Districts have the most drop-offs
+-   What do those have in common?
+-   What day/time is most popular for drop-off?
+-   How many are open year round?
+-   What do those have in common?
+-   Do any Community Districts have more then one drop-off? What about Census Tracts?
+-   Which borough has the most drop-offs
+
+So lets first focus on Council Districts.
 
 ```{r pressure, echo=FALSE}
 plot(pressure)
