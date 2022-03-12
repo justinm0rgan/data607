@@ -17,7 +17,7 @@ library(sf)
 
 ## Overview
 
-In April 2020 <a href="https://www1.nyc.gov/assets/dsny/site/resources/press-releases/nyc-sanitation-announces-service-changes-related-to-covid-19-budget-cuts"> NYC Sanitation announced service changes</a> to their Curbside Composting program related to COVID-19 budget cuts. This meant any residents that were lucky enough to be able to partake in this greenhouse gas saving program, were cut off. Luckily some organizations rose to the challenge and began accepting food scrap drop-offs. For example in Greenpoint where I reside, <a href=" https://northbrooklynmutualaid.org/"> North Brooklyn Mutual Aid </a> started accepting food scraps in both <a href="https://www.nycgovparks.org/parks/msgr-mcgolrick-park"> Mcgolrick </a>, <a href="https://www.nycgovparks.org/parks/cooper-park"> Cooper </a> and <a href="https://www.nycgovparks.org/parks/transmitter-park"> Transmitter </a> parks. This enabled residents to minimize their environmental compost even when the city wasn't able to facitilate. As of August 2021 the Curbside Composting is back in effect, however it only services the following Community Boards:
+In April 2020 <a href="https://www1.nyc.gov/assets/dsny/site/resources/press-releases/nyc-sanitation-announces-service-changes-related-to-covid-19-budget-cuts"> NYC Sanitation announced service changes</a> to their Curbside Composting program related to COVID-19 budget cuts. This meant any residents that were lucky enough to be able to partake in this greenhouse gas saving program, were cut off. Luckily some organizations rose to the challenge and began accepting food scrap drop-offs. For example in Greenpoint where I reside, <a href=" https://northbrooklynmutualaid.org/"> North Brooklyn Mutual Aid </a> started accepting food scraps in both <a href="https://www.nycgovparks.org/parks/msgr-mcgolrick-park"> Mcgolrick </a>, <a href="https://www.nycgovparks.org/parks/cooper-park"> Cooper </a> and <a href="https://www.nycgovparks.org/parks/transmitter-park"> Transmitter </a> parks. This enabled residents to minimize their environmental compost even when the city wasn't able to facilitate. As of August 2021 the Curbside Composting is back in effect, however it only services the following Community Boards:
 
 <u>**Brooklyn**</u>
 - 1, 2, 6 and 7
@@ -28,8 +28,24 @@ In April 2020 <a href="https://www1.nyc.gov/assets/dsny/site/resources/press-rel
 <u>**Bronx**</u>
 - 8
 
-```{r}
-#could maybe have a map of shapefile with community boards here. 
+```{r create-simple-df}
+# create df to show current curbside composting program coverage
+df_bb <- data.frame(boro = 
+      c(rep("Brooklyn",4),"Bronx", rep("Manhattan",2), "Queens", "Staten Island"),
+      comm_boards = c(1,2,6,7,8,6,7,NA,NA))
+```
+
+````{r read-comm-b}
+# read in community district shapefile
+df_cd <- read_sf("./data/geo_export_f9ac259f-1dc1-4021-95bc-6fff4cc3fd89.shp")
+
+head(df_cd)
+```
+```{r split-boro-cd}
+df_cd <- df_cd %>% 
+  mutate(boro = substr(df_cd$boro_cd,1,1), 
+         cd = substr(df_cd$boro_cd,2,3)) %>% 
+  select(boro, cd, shape_area, shape_leng, geometry)
 ```
 
 That said, not only are their a bunch of volunteer organizations that accept food scraps, but there are also a plethora of community gardens even some urban farms that will take your food scraps.
