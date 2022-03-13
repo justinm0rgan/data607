@@ -28,6 +28,7 @@ In April 2020 <a href="https://www1.nyc.gov/assets/dsny/site/resources/press-rel
 <u>**Bronx**</u>
 - 8
 
+**THIS IS EXTRA STUFF, NOT NEEDED FOR BASIC ANALYSIS**
 ```{r create-simple-df}
 # create df to show current curbside composting program coverage
 df_bb <- data.frame(boro = 
@@ -52,13 +53,13 @@ That said, not only are their a bunch of volunteer organizations that accept foo
 
 I wanted to do some exploratory data analysis to answer the following questions:
 
+-   Which borough has the most drop-offs
 -   Which Council Districts have the most drop-offs
 -   What do those have in common?
 -   What day/time is most popular for drop-off?
 -   How many are open year round?
 -   What do those have in common?
 -   Do any Community Districts have more then one drop-off? What about Census Tracts?
--   Which borough has the most drop-offs
 
 The end result will be to develop a comprehensive understanding of where food-scrap drop off locations in NYC are located, and how the curbside composting program could work in collaboration with volunteer organizations to more equability offer its services.
 
@@ -127,22 +128,113 @@ Re-load in data frame.
 ```{r load-data}
 # if we don't load it in as a gdf doesn't load point coordinates.
 df_sf <- read_sf("./data/Food_Scrap_Drop-Off_Locations_in_NYC2022-03-11.shp")
+
+head(df_sf)
+```
+```{r}
+# convert columns to numeric
+cols.num <- c("councildist", "borocd", "precinct")
+df_sf[cols.num] <- sapply(df_sf[cols.num], as.numeric)
 ```
 
 ## Analysis questions
 
-Which Council Districts have the most drop-offs
--   What do those have in common?
--   What day/time is most popular for drop-off?
--   How many are open year round?
--   What do those have in common?
--   Do any Community Districts have more then one drop-off? What about Census Tracts?
--   Which borough has the most drop-offs
+So lets first focus on borough.
 
-So lets first focus on Council Districts.
+This will enable better visualizations with borough name and corresponding cd.
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+### Which Borough has the most drop-offs?
+
+```{r boro-most-drop-offs}
+df_sf %>% 
+  count(borough) %>% 
+  arrange(desc(n)) %>% 
+  ggplot(aes(n, reorder(borough,n))) + 
+    geom_bar(stat = "identity")
+```
+Looks like there are errors in the data, `Brookyln` is an incorrect spelling of `Brooklyn` and `Greenwich St. & Duane St.` is in Manhattan.
+
+Correct these errors and redo code
+```{r correct-borough-errors}
+df_sf <- df_sf %>% 
+  within(borough[borough == "Brookyln"] <- "Brooklyn") %>% 
+  within(borough[borough == "Greenwich St. & Duane St"] <- "Manhattan")
+
+# check unique boroughs
+unique(df_sf$borough)
+```
+```{r redo-with-correct-data}
+df_sf %>% 
+  count(borough) %>% 
+  arrange(desc(n)) %>% 
+  ggplot(aes(n, reorder(borough,n), fill = borough)) + 
+    geom_bar(stat = "identity") +
+    scale_fill_discrete(guide = "none")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Now we get the true picture of counts per borough of food scrap drop-offs and can see Manhattan has the most followed by Brooklyn, Queens, Bronx and Staten Island.
+
+**WOULD BE INTERESTING TO LOOK AT RATE to pop perhaps AS WELL IF HAVE TIME**
+
+### Which Council Districts have the most drop-offs?
+
+```{r cd-most-drop-offs}
+df_sf %>% 
+  group_by(borocd, borough) %>%
+  summarise(
+    count = n()
+  ) %>% 
+  arrange(desc(count)) %>%
+  filter(count > 1) %>% 
+  ggplot(aes(count, reorder(borocd,count), fill = borough)) +
+    geom_bar(stat = "identity")
+```
+
+### Do any Council Districts have more then one drop off?
+
+```{r cd-more-then-one}
+df_sf %>%
+  group_by(borocd, borough) %>% 
+  summarise(
+    count = n()
+  ) %>% 
+  filter(count >=5) %>% 
+  arrange(desc(count))
+```
+
+#### What about Census Tracts?
+```{r census-tract}
+df_sf %>% 
+  group_by(ct2010, borough) %>% 
+  summarise(
+    count = n()
+  ) %>% 
+  filter(count >= 2) %>% 
+  arrange(desc(count))
+```
+What borough/neighborhood are the CT with more then one drop-off in?
+
+```{r neighborhood-more-then-one}
+df_sf %>% 
+  group_by(ct2010, borough, ntaname) %>% 
+  summarise(
+    count = n()
+  ) %>% 
+  filter(count >= 2) %>% 
+  arrange(desc(count))
+```
+
+#### What do these have in common?
+
+### What day/time is the most popular for drop-ff?
+
+```{r day-time}
+head(df_sf$operation_day_hours)
+```
+
+### How many are open year round?
+```{r open}
+head(df_sf$open_months)
+```
+
+#### What do these have in common?
