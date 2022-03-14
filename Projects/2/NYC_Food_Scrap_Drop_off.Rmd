@@ -34,17 +34,9 @@ In April 2020 <a href="https://www1.nyc.gov/assets/dsny/site/resources/press-rel
 # create df to show current curbside composting program coverage
 df_bb <- data.frame(boro_name = 
       c(rep("Brooklyn",4),"Bronx", rep("Manhattan",2), "Queens", "Staten Island"),
-      cd = c(01,02,06,07,08,06,07,NA,NA))
-
-# create empty col for boro number
-df_bb$boro_num <- as.numeric(NaN)
-
-# populate with boro numbers
-df_bb[df_bb$boro_name == "Manhattan",]$boro_num <- 1
-df_bb[df_bb$boro_name == "Bronx",]$boro_num <- 2
-df_bb[df_bb$boro_name == "Brooklyn",]$boro_num <- 3
-df_bb[df_bb$boro_name == "Queens",]$boro_num <- 4
-df_bb[df_bb$boro_name == "Staten Island",]$boro_num <- 5
+      boro_num = c(rep(3,4), 2, 1, 1, 4, 5),
+      cd = c(1,2,6,7,8,6,7,NA,NA),
+      comp = as.logical(c(rep(1,7),0,0)))
 
 
 df_bb
@@ -78,18 +70,23 @@ df_joined <- left_join(df_cd, df_bb, by = c("boro" = "boro_num", "cd" = "cd"))
 
 head(df_joined)
 ```
-Add names for missing borough names
-```{r add-missing-boro-names}
+Add names for missing borough names and composting
+```{r add-missing}
+# missing borough
 df_joined[df_joined$boro == 1,]$boro_name <- "Manhattan"
 df_joined[df_joined$boro == 2,]$boro_name <- "Bronx"
 df_joined[df_joined$boro == 3,]$boro_name <- "Brooklyn"
 df_joined[df_joined$boro == 4,]$boro_name <- "Queens"
 df_joined[df_joined$boro == 5,]$boro_name <- "Staten Island"
 
+# missing logical
+df_joined[is.na(df_joined$comp),]$comp <- FALSE
+
+# preview
 head(df_joined)
 ```
 ```{r map-curbside}
-plot(st_geometry(df_joined))
+plot(df_joined["comp"])
 ```
 
 
