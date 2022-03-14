@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r results=FALSE, message=FALSE}
 library(tidyverse)
 library(dotenv)
+library(RSocrata)
 library(sf)
 ```
 
@@ -31,10 +32,25 @@ In April 2020 <a href="https://www1.nyc.gov/assets/dsny/site/resources/press-rel
 **THIS IS EXTRA STUFF, NOT NEEDED FOR BASIC ANALYSIS**
 ```{r create-simple-df}
 # create df to show current curbside composting program coverage
-df_bb <- data.frame(boro = 
+df_bb <- data.frame(boro_name = 
       c(rep("Brooklyn",4),"Bronx", rep("Manhattan",2), "Queens", "Staten Island"),
-      comm_boards = c(1,2,6,7,8,6,7,NA,NA))
+      cd = c(01,02,06,07,08,06,07,NA,NA))
+
+# create empty col for boro number
+df_bb$boro_num <- as.numeric(NaN)
+
+# populate with boro numbers
+df_bb[df_bb$boro_name == "Manhattan",]$boro_num <- 1
+df_bb[df_bb$boro_name == "Bronx",]$boro_num <- 2
+df_bb[df_bb$boro_name == "Brooklyn",]$boro_num <- 3
+df_bb[df_bb$boro_name == "Queens",]$boro_num <- 4
+df_bb[df_bb$boro_name == "Staten Island",]$boro_num <- 5
+
+
+df_bb
 ```
+
+City Council District shapefile was obtained from <a href="https://data.cityofnewyork.us/City-Government/City-Council-Districts/yusd-j4xi"> Open Data NYC </a>
 
 ````{r read-comm-b}
 # read in community district shapefile
@@ -42,12 +58,40 @@ df_cd <- read_sf("./data/geo_export_f9ac259f-1dc1-4021-95bc-6fff4cc3fd89.shp")
 
 head(df_cd)
 ```
+
+I would like to join it with the made up data frame to show coverage of NYC Curbside Composting program.
+
 ```{r split-boro-cd}
 df_cd <- df_cd %>% 
-  mutate(boro = substr(df_cd$boro_cd,1,1), 
-         cd = substr(df_cd$boro_cd,2,3)) %>% 
+  mutate(boro = as.numeric(substr(df_cd$boro_cd,1,1)), 
+         cd = as.numeric(substr(df_cd$boro_cd,2,3))) %>% 
   select(boro, cd, shape_area, shape_leng, geometry)
+
+# preview df
+head(df_cd)
 ```
+
+Join data frame with Shapefile
+
+```{r join-cd-df}
+df_joined <- left_join(df_cd, df_bb, by = c("boro" = "boro_num", "cd" = "cd"))
+
+head(df_joined)
+```
+Add names for missing borough names
+```{r add-missing-boro-names}
+df_joined[df_joined$boro == 1,]$boro_name <- "Manhattan"
+df_joined[df_joined$boro == 2,]$boro_name <- "Bronx"
+df_joined[df_joined$boro == 3,]$boro_name <- "Brooklyn"
+df_joined[df_joined$boro == 4,]$boro_name <- "Queens"
+df_joined[df_joined$boro == 5,]$boro_name <- "Staten Island"
+
+head(df_joined)
+```
+```{r map-curbside}
+plot(st_geometry(df_joined))
+```
+
 
 That said, not only are their a bunch of volunteer organizations that accept food scraps, but there are also a plethora of community gardens even some urban farms that will take your food scraps.
 
@@ -67,7 +111,7 @@ For more information on why composting is good for the environment, check out th
 
 ## Data Dictionary
 
-There are 17 columns in the dataset.
+There are 17 columns in the data set.
 See name, description and type below:
 
 | Column Name 	| Description 	| Type 	|  	|
@@ -94,16 +138,8 @@ See name, description and type below:
 
 <a href="https://opendata.cityofnewyork.us/> Open Data NYC </a> has a plethora of free and easily downloadable datasets. For our purposes I will be downloading the <a href ="https://data.cityofnewyork.us/Environment/Food-Scrap-Drop-Off-Locations-in-NYC/if26-z6xq"> Food Scrap Drop-Off Locations in NYC </a>. As of March 2022 this was last updated on November, 16th 2021, so I will be using the <a href="https://dev.socrata.com/connectors/rsocrata.html"> Socrata </a> API to get the data so it can easily be downloaded if updated, to update this analysis in the future.
 
-First let's install the Socrata pacakge. 
-```{r install-socrata}
-if (!("RSocrata" %in% installed.packages())) {
-  install.packages("RSocrata")
-}
+First let's read in the data using the Socrata API:
 
-library(RSocrata)
-```
-
-Then let's read in the data using the API:
 ```{r read-in-data-socrata-api, warning=FALSE}
 # load api token
 load_dot_env()
