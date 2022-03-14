@@ -72,6 +72,7 @@ There are 15 columns in this data set, you can see the titles, description and t
 Questions of interest are:
 
 **1. Find the state with the highest and lowest deaths**
+
 **2. Compare the death rate both before and after the vaccine was released**
 
 ## Question 1
