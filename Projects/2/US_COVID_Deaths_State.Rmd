@@ -1,5 +1,5 @@
 ---
-+--title: "United States COVID-19 Cases and Deaths by State"
+title: "United States COVID-19 Cases and Deaths by State"
 author: "Justin Williams"
 date: "3/10/2022"
 output: html_document
@@ -20,11 +20,11 @@ library(lubridate)
 
 ## Overivew
 
-Center for Disease Control and Prevention (CDC) reports aggregate counts of COVID-19 death and case number daily. Data is based on most recent numbers reported by states, territories and other jurisdictions. This depends on timely and accurate reporting, therefore there are some missing values. 
+Center for Disease Control and Prevention (CDC) reports aggregate counts of COVID-19 death and case number daily. Data is based on most recent numbers reported by states, territories and other jurisdictions. This depends on timely and accurate reporting, therefore some values are missing. 
 
-There are currently 60 public health jurisdictions reporting COVID-19 cases, including the 50 states, District of Columbia, NYC, American Samoa, Guam the Commonwealth of the Northern Mariana Islands, Puerto Rico and the US Virgin Islands. Additionally three independent countries in compacts of free association with the United States, Federated States of Micronesia, Republic of the Marshall Islands, and Republic of Palu.
+There are currently 60 public health jurisdictions reporting COVID-19 cases, including the 50 states, District of Columbia, NYC, American Samoa, Guam, the Commonwealth of the Northern Mariana Islands, Puerto Rico and the US Virgin Islands. Additionally three independent countries in compacts of free association with the United States, Federated States of Micronesia, Republic of the Marshall Islands, and Republic of Palu.
 
-```{r api-download-latest-data}
+```{r api-download-latest-data, warning=FALSE}
 # load up hidden api key
 load_dot_env()
 
@@ -38,7 +38,7 @@ write_csv(df, paste("./data/us_covid_cases_and_deaths_",Sys.Date(),".csv", sep =
 
 ```{r load-data, message=FALSE}
 # load data saved
-df <- read_csv("./data/us_covid_cases_and_deaths_2022-03-10.csv")
+df <- read_csv(paste("./data/us_covid_cases_and_deaths_",Sys.Date(),".csv", sep=""))
 ```
 
 ```{r data-preview}
@@ -71,8 +71,8 @@ There are 15 columns in this data set, you can see the titles, description and t
 
 Questions of interest are:
 
-- Find the state with the highest and lowest deaths
-- Compare the death rate both before and after the vaccine was released
+**1. Find the state with the highest and lowest deaths**
+**2. Compare the death rate both before and after the vaccine was released**
 
 ## Question 1
 ### State with highest and lowest deaths
@@ -91,11 +91,13 @@ head(df_tot_deaths)
 ```
 
 Since `NYC` and `NYS` are reported separately, let's isolate these values.
-May need to add them together to get a total and create a new row. 
+May need to add them together later to get a total and create a new row. 
 
 ```{r nys-andnyc}
 df_tot_deaths[df_tot_deaths$state == 'NY' | df_tot_deaths$state == 'NYC',]
 ```
+
+#### All States
 
 ```{r graph-states with most deaths}
 df_tot_deaths %>%
@@ -103,9 +105,14 @@ df_tot_deaths %>%
   ggplot(aes(x = reorder(state, tot_death), y = tot_death)) +
   geom_bar(stat = 'identity') +
   coord_flip() +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  labs(x = "States", y = "Total Deaths", subtitle = paste("COVID-19 Total Death Count by state as of ", Sys.Date(), sep = ""))
 ```
 
+`California` has the highest count of COVID Cases.
+Let's zoom in and look at the top 10.
+
+#### Top 10
 
 ```{r top-10}
 df_tot_deaths %>% 
@@ -113,10 +120,27 @@ df_tot_deaths %>%
   ggplot(aes(reorder(state, tot_death), tot_death, fill = tot_death)) +
     geom_bar(stat = 'identity') +
     scale_fill_gradient2(high = muted("blue")) +
-    coord_flip()
-    theme(legend.position = 'none')
+    coord_flip() +
+    theme(legend.position = 'none') +
+    labs(x = "States", y = "Total Deaths", subtitle = paste("Top 10 COVID-19 Total Death Count states as of ", Sys.Date(), sep = ""))
 ```
 
+Here we can see the top 10:
+
+- California
+- Texas
+- Florida
+- Pennsylvania
+- NYC
+- Ohio
+- Illinois
+- Georgia
+- Michigan
+- New Jersey
+
+Now let's look at the bottom 10. 
+
+#### Bottom 10
 
 ```{r bot-10}
 df_tot_deaths %>% 
@@ -124,11 +148,12 @@ df_tot_deaths %>%
     ggplot(aes(reorder(state, -tot_death), tot_death, fill = tot_death)) +
     geom_bar(stat = 'identity') +
     scale_fill_gradient2(high = muted("blue")) +
-    coord_flip()
-    theme(legend.position = 'none')
+    coord_flip() +
+    labs(x = "States", y = "Total Deaths", subtitle = paste("Bottom 10 COVID-19 Total Death Count states as of ", Sys.Date(), sep = "")) +
+    guides(fill = guide_legend(title = "Total Deaths"))
 ```
 
-## Death rate by state
+### Death rate by state
 
 Now lets create a `death_rate` column and look at top_n that way.
 
@@ -137,35 +162,44 @@ df_tot_deaths <- df_tot_deaths %>%
   mutate(death_rate = tot_death / tot_cases)
 ```
 
-Let's view top_n by rate
+Let's view top_n by rate.
+
+#### Top 10 death rate
 
 ```{r top-10-rate}
 df_tot_deaths %>% 
   slice_max(death_rate, n = 10) %>% 
   ggplot(aes(reorder(state, death_rate), death_rate, fill = death_rate)) +
     geom_bar(stat = 'identity') +
-    scale_fill_gradient2(high = muted("blue"), mid = "red", low = "white") +
-    coord_flip()
-    theme(legend.position = 'none')
+    scale_fill_gradient2(high = muted("blue"), mid = "red") +
+    coord_flip() +
+    theme(legend.position = 'none') +
+    labs(x = "States", y = "Death Rate", subtitle = paste("Top 10 COVID-19 Total Death Rate states as of ", Sys.Date(), sep = ""))
 ```
+
+When we compare via rate, we can see California isn't even in the top 10. NYC takes the cake by almost a full 2%.
+
+#### Bottom 10 death rate
+
 ```{r bot-10-rate}
 df_tot_deaths %>% 
   slice_min(death_rate, n = 10) %>% 
     ggplot(aes(reorder(state, -death_rate), death_rate, fill = death_rate)) +
     geom_bar(stat = 'identity') +
-    scale_fill_gradient2(high = muted("blue"), mid = "red") +
-    coord_flip()
-    theme(legend.position = 'none')
+    scale_fill_gradient2(high = muted("blue"), low = "white") +
+    coord_flip() +
+    labs(x = "States", y = "Death Rate", subtitle = paste("Bottom 10 COVID-19 Total Death Rate states as of ", Sys.Date(), sep = "")) +
+    guides(fill = guide_legend(title = "Death Rate"))
 ```
 
-# This section may have to be abandoned due to time constraints
-## Simple map
+### Simple US map
 
-Built is pacakge `usmaps` will suffice for this.
-It will only have the 52 states but is fine for this purpose.
+Now let's create a simple US map to visualize count and rate by state.
+Built in package `usmaps` will only have the 52 states but is fine for our purposes.
 
-Have to sum `NY` and `NYC`
-```{r sum-ny-nyc}
+Have to sum `NY` and `NYC` and create new row.
+
+```{r sum-ny-nyc, warning=FALSE}
 # sum total cases
 NYS_tot_cases <- sum(df_tot_deaths$tot_cases[df_tot_deaths$state == "NY" | df_tot_deaths$state == "NYC"])
 
@@ -177,47 +211,61 @@ NYS_death_rate <- sum(df_tot_deaths$death_rate[df_tot_deaths$state == "NY" | df_
 
 #Latest date
 dateLatest = as.POSIXct(max(df_tot_deaths$submission_date), origin = "1970-01-01", tz = "UTC")
-dateLatest
 
 # add new york summed row
-rbind(df_tot_deaths, dateLatest, "NYS", NYS_tot_cases, NYS_tot_deaths, NYS_death_rate)
+df_tot_deaths[nrow(df_tot_deaths) + 1,] <- list(dateLatest, "NYS", NYS_tot_cases, NYS_tot_deaths, NYS_death_rate)
 
 # remove separate ny and nyc
 df_tot_deaths_ny <- subset(df_tot_deaths, state != "NYC" & state !="NY")
 
 # rename NYS to NY
 df_tot_deaths_ny <-  within(df_tot_deaths_ny, state[state == "NYS"] <- "NY")
-
-df_tot_deaths
 ```
 
-Join `df_tot_deaths_ny` with statepop
+Join `df_tot_deaths_ny` with `statepop`
 
 ```{r join-with-statepop}
-left_join(statepop, df_tot_deaths_ny, by = c("abbr" = "state"))
+df_tot_deaths_ny <-  left_join(statepop, df_tot_deaths_ny, by = c("abbr" = "state"))
 ```
 
+Plot simple US map.
 
-```{r simple-map-with-count}
-# use usmap with built in pop
-plot_usmap(data = statepop, values = "pop_2015", color = "blue") +
-  scale_fill_continuous(low="white", high="red", name = "Population",
-                        label = scales::comma)
-
-statepop
+```{r usmap-count}
+plot_usmap(data = df_tot_deaths_ny, values = "tot_death", color = "blue") +
+  scale_fill_continuous(low="white", high="red", name = "Total Deaths",
+                        label = scales::comma) +
+  labs(subtitle = paste("COVID-19 Total Death Count by state as of ", Sys.Date(), sep = "")) +
+  theme(legend.position = c(0.9,0.1))
 ```
+
+Clearly California, Texas, Florida and New York have the most cases.
+
+Let's look at this simple map via rate.
+
+```{r usmap-rate}
+plot_usmap(data = df_tot_deaths_ny, values = "death_rate", color = "blue") +
+  scale_fill_continuous(low="white", high="red", name = "Total Death Rate",
+                        label = scales::comma) +
+  labs(subtitle = paste("COVID-19 Total Death Rate by state as of ", Sys.Date(), sep = "")) +
+  theme(legend.position = c(0.9,0.1))
+```
+
+When we combine `NY` with `NYC`, we get a 0.013 death rate, therefore it does not have the highest rate. Here we can see Pennsylvania, Georga and Michigan have the darker red color and therefore higher rate. However you can visually see the difference between the count and rate US maps. Clearly they paint a different picture.
 
 ## Question 2
 ### Compare death rate before and after vaccine being released
 
-According to <a href="https://www.fda.gov/news-events/press-announcements/fda-takes-key-action-fight-against-covid-19-issuing-emergency-use-authorization-first-covid-19">FDA.gov</a>, the First COVID-19 Vaccine was authorized on **Dec 11th, 2020**. This was for emergency use only, however for simplicity sake we will use this as a place marker for this study. 
+According to <a href="https://www.fda.gov/news-events/press-announcements/fda-takes-key-action-fight-against-covid-19-issuing-emergency-use-authorization-first-covid-19">FDA.gov</a>, the First COVID-19 Vaccine was authorized on **Dec 11th, 2020**. This was for emergency use only, however for simplicity sake we will use this as a place marker for this analysis. 
 
-In this analysis we will use what the World Health Organization defines as <a href="https://www.who.int/news-room/commentaries/detail/estimating-mortality-from-covid-19">Infection fatality ratio (IFR)</a> as our death rate. T
+Additionally, we will use what the World Health Organization defines as <a href="https://www.who.int/news-room/commentaries/detail/estimating-mortality-from-covid-19">Infection fatality ratio (IFR)</a> as our death rate.
 
 This is calculated by:
 
 $$\text{Infection fatality ratio (IFR, in %) = }\frac{\text {Number of deaths from  disease}}{\text{Number of infected  individuals}} \text{x 100}$$
-They note that the true severity of a disease can be described by the Infection Fatality Ratio.
+
+Let's create two data frames, before and after the vaccination was released.
+
+#### Before Vax data frame
 
 ```{r before-vax}
 df_before_vax <- df %>% 
@@ -234,7 +282,10 @@ df_before_vax[is.na(df_before_vax$death_rate_before),]
 # preview df
 head(df_before_vax)
 ```
+
 Missing values are simply divide by zero error, no need to account for them using na.rm = T will work.
+
+#### After Vax data frame
 
 ```{r after-vax}
 df_after_vax <- df %>% 
@@ -251,9 +302,13 @@ df_after_vax[is.na(df_after_vax$death_rate_after),]
 # preview df
 head(df_after_vax)
 ```
+
 No missing values in `df_after_vax`
 
-Overall before after vax.
+
+Let's create an overall data frame to get a complete picutre of how the release of the vaccine effected death rates.
+
+#### Overall data frame
 
 ```{r join-on-state}
 df_death_rate <- df_before_vax %>% 
@@ -273,15 +328,21 @@ before_vax <- sum(df_death_rate$death_rate_before, na.rm = T)/nrow(df_death_rate
 after_vax <- sum(df_death_rate$death_rate_after, na.rm = T)/nrow(df_death_rate)
 
 # create new df
-df_death_rate_sum <- data.frame(vax_status = c("before_vax", "after_vax"), 
+df_death_rate_sum <- data.frame(vax_status = c("Before Vax", "After Vax"), 
                                 death_rate = c(before_vax, after_vax))
 
 df_death_rate_sum
 ```
+
+Let's visualize this table.
+
 ```{r simple-death-rate-sum}
 ggplot(df_death_rate_sum, aes(x=death_rate, y= vax_status, fill = vax_status)) +
-  geom_bar(stat = 'identity')
+  geom_bar(stat = 'identity') +
+  labs(x = "Death Rate", y = "", subtitle = paste("Overall COVID-19 US Death Rate as of ", Sys.Date(),sep = "")) +
+  theme(legend.position = "none")
 ```
+
 ## Conclusion
 
 ### Question 1
