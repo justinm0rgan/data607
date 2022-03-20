@@ -1,0 +1,82 @@
+---
+title: "Working with XML and JSON in R"
+author: "Justin Williams"
+date: "3/20/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+library(RCurl)
+library(XML)
+library(jsonlite)
+library(rvest)
+```
+
+## Overview
+
+We were asked to pick three of our favorite books on one of our favorite subjects.
+<br>
+Basic requirements were:
+  - at least one of the books should have more than one author
+  - for each book, include the title, authors, and two or three other        attributes that we find interesting.
+  - Take the information that we've selected, and separately create three    files which store the book’s information in:
+    - HTML (using an html table)
+    - XML
+    - JSON 
+<br>
+Write R code, using our packages of choice, to load the information from each of the three sources into separate R data frames. 
+
+**Question**
+<br>
+*Are the three data frames identical?*
+<Br>
+**<u>Deliverable</u>**
+<br>
+Three source files and R code. 
+
+### Steps
+<br>
+1. Select books:
+| Rank 	| Title 	| Author(s) 	| Year Pub 	| Topic(s) 	|
+|:---:	|:---:	|:---:	|:---:	|:---:	|
+| 1 	| Diet for a New America 	| John Robbins 	| 1987 	| diet, health, vegetarian, vegan, animal rights 	|
+| 2 	| The Third Industrial Revolution 	| Jeremy Rifkin 	| 2011 	| economics, renewable energy, new energy regime, lateral thinking, digital revolution 	|
+| 3 	| Another Economy is Possible 	| Manuel castells, Sarah Banet-Weiser, Sviatlana Hlebik, Giorgos Kallis, Sarah Pink, Kirsten Seale, Lisa J. Servon, Lana Swartz, Angelos Varvarousis 	| 2008 	| economics, sharing economy, alternative economic practices, cooperatives, barter networks 	|
+<br>
+2. Create files in each format 
+  - This was done via `RStudio` IDE
+<br>
+3. Host files 
+  - Github was chosen to host each file
+  
+4. Import in R
+  - Write code to import each file into a valid dataframe format in R
+  
+5. Conclusion
+
+## Load data
+### Get links of each `books` file
+
+```{r get-links}
+books_html <- "https://raw.githubusercontent.com/justinm0rgan/data607/main/Assignments/wk7/books.html"
+books_xml <- "https://raw.githubusercontent.com/justinm0rgan/data607/main/Assignments/wk7/books.xml"
+books_json <- "https://raw.githubusercontent.com/justinm0rgan/data607/main/Assignments/wk7/books.json"
+```
+
+
+```{r import-html}
+htmlParse(books_html)
+```
+
+### Establish Connection
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+## Conclusion

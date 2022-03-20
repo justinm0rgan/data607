@@ -1,19 +1,22 @@
 {"books" :[
   {
+    "rank" : 1,
     "title" : "Diet for a New America",
     "author" : "John Robbins",
     "year" : 1987,
     "topic" : ["diet", "health", "vegetarian", "vegan", "animal rights"]
   },
   {
+  "rank" : 2,
   "title" : "The Third Industrial Revolution",
   "author" : "Jeremy Rifken",
   "year" : 2011,
   "topic" : ["economics, renewable energy, new energy regime, lateral thinking, digital revolution"]
   }
   {
+    "rank" : 3,
     "title" : "Another Economy is Possible",
-    "author" : ["Manuel castells, Sarah Banet-Weiser, Sviatlana Hlebik, Giorgos Kallis, Sarah Pink, Kirsten Seale, Lisa J. Servon, Lana Swartz, Angelos Varvarousis"]
+    "author" : ["Manuel Castells, Sarah Banet-Weiser, Sviatlana Hlebik, Giorgos Kallis, Sarah Pink, Kirsten Seale, Lisa J. Servon, Lana Swartz, Angelos Varvarousis"],
     "year" : 2008,
     "topic" : ["economics, sharing economy, alternative economic practices, cooperatives, barter networks"]
   }]
