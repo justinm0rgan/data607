@@ -2,31 +2,40 @@
 <books>
   <book id="1">
     <title>Diet for a New America</title>
-    <author> author1 = "John Robbins"</author>
+    <author id="1">John Robbins</author>
     <year>1987</year>
-    <topic> topic1 = "diet" topic2 = "health topic3 =  "vegetarian"
-    topic4 = "vegan" topic5 = "animal rights"</topic>
+    <topic id="1">diet</topic>
+    <topic id="2">vegetarian</topic>
+    <topic id="3">vegan</topic>
+    <topic id="4">animal rights</topic>
   </book>
   <book id="2">
     <title>The Third Industrial Revolution</title>
-    <author> author1 = "Jeremy Rifken"</author>
+    <author id="1">Jeremy Rifken</author>
     <year>2011</year>
-    <topic> topic1 = "economics" topic2 = "renewable energy" topic3 =
-    "new energy regime" topic4 = "lateral thinking" 
-    topic5 = "digital revolution"
+    <topic id="1">economics</topic>
+    <topic id="2">renewable energy</topic> 
+    <topic id="3">new energy regime</topic>
+    <topic id="4">lateral thinking</topic>
+    <topic id="5">digital revolution</topic>
     </topic>
   </book>
   <book id="3">
     <title>Another Economy is Possible</title>
-    <author> author1 = "Manuel Castells" author2 = "Sarah Banet-Weiser"
-    author3 = "Sviatlana Hlebik" author4 = "Giorgos Kallis"
-    author5 = "Sarah Pink" author6 = "Kirsten Seale" 
-    author7 = "Lisa J. Servon" author8 = "Lana Swartz" 
-    author9 = "Angelos Varvarousis"
-    </author>
+    <author id="1">Manuel Castells</author>
+    <author id="2">Sarah Banet-Weiser</author>
+    <author id="4">Sviatlana Hlebik</author>
+    <author id="5">Giorgos Kallis</author>
+    <author id="6">Sarah Pink</author>
+    <author id="7">Kirsten Seale</author> 
+    <author id="8">Lisa J. Servon</author>
+    <author id="8">Lana Swartz</author>
+    <author9 id="9">Angelos Varvarousis</author>
     <year>2008</year>
-    <topic> topic1 = "economics" topic2 = "sharing economy" 
-    topic3 = "alternative economic practices"
-    topic4 = "cooperatives" topic5 = "barter networks"</topic>
+    <topic id="1">economics</topic>
+    <topic id="2">sharing economy</topic> 
+    <topic id="3">alternative economic practices</topic>
+    <topic id="4">cooperatives</topic>
+    <topic id="5">barter networks</topic>
   </book>
 </books>
