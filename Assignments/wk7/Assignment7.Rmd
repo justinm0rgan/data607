@@ -55,12 +55,11 @@ Three source files and R code.
   - Github was chosen to host each file
   
 4. Import in R
-  - Write code to import each file into a valid dataframe format in R
+  - Write code to import each file into a valid data frame format in R
   
 5. Conclusion
 
 ## Load data
-### Get links of each `books` file
 
 ```{r get-links}
 books_html <- "https://raw.githubusercontent.com/justinm0rgan/data607/main/Assignments/wk7/books.html"
@@ -68,15 +67,41 @@ books_xml <- "https://raw.githubusercontent.com/justinm0rgan/data607/main/Assign
 books_json <- "https://raw.githubusercontent.com/justinm0rgan/data607/main/Assignments/wk7/books.json"
 ```
 
+### HTML
 
 ```{r import-html}
-htmlParse(books_html)
+# extract link of html file
+books_html <- getURL(books_html)
+
+# create df from html table
+df_html <- books_html %>% 
+  readHTMLTable()
+
+df_html
 ```
 
-### Establish Connection
+### XML
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r import-xml}
+# extract link of xml file
+getURL(books_xml)
+
+books_xml %>% 
+  xmlParse() %>% 
+  xmlRoot()
+
+read
+
+# error message, must update xml to include authors as attributes
+```
+### JSON
+
+```{r import-json}
+# extract link of json file
+books_json <- getURL(books_json)
+
+books_json %>% 
+  fromJSON()
 ```
 
 ## Conclusion

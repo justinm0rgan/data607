@@ -12,17 +12,21 @@
     <author> author1 = "Jeremy Rifken"</author>
     <year>2011</year>
     <topic> topic1 = "economics" topic2 = "renewable energy" topic3 =
-    "new energy regime topic4 = "lateral thinking topic5 = "digital revolution"
+    "new energy regime" topic4 = "lateral thinking" 
+    topic5 = "digital revolution"
     </topic>
   </book>
   <book id="3">
     <title>Another Economy is Possible</title>
-    <author> author1 = "Manuel Castells"author2 = "Sarah Banet-Weiser"
+    <author> author1 = "Manuel Castells" author2 = "Sarah Banet-Weiser"
     author3 = "Sviatlana Hlebik" author4 = "Giorgos Kallis"
-    author5 = "Sarah Pink" author6 = "Kirsten Seale" author7 = "Lisa J. Servon"</author> 
-    author8 = "Lana Swartz" author9 = "Angelos Varvarousis"</author>
+    author5 = "Sarah Pink" author6 = "Kirsten Seale" 
+    author7 = "Lisa J. Servon" author8 = "Lana Swartz" 
+    author9 = "Angelos Varvarousis"
+    </author>
     <year>2008</year>
-    <topic> topic1 = "economics" topic2 = "sharing economy"topic3 = "alternative economic practices"</topic>
+    <topic> topic1 = "economics" topic2 = "sharing economy" 
+    topic3 = "alternative economic practices"
     topic4 = "cooperatives" topic5 = "barter networks"</topic>
   </book>
 </books>
