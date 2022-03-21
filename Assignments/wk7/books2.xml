@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<books>
+  <book id="1">
+    <title>Diet for a New America</title>
+    <author id="1">John Robbins</author>
+    <year>1987</year>
+    <topic id="1">diet</topic>
+    <topic id="2">vegetarian</topic>
+    <topic id="3">vegan</topic>
+    <topic id="4">animal rights</topic>
+  </book>
+  <book id="2">
+    <title>The Third Industrial Revolution</title>
+    <author id="1">Jeremy Rifken</author>
+    <year>2011</year>
+    <topic id="1">economics</topic>
+    <topic id="2">renewable energy</topic> 
+    <topic id="3">new energy regime</topic>
+    <topic id="4">lateral thinking</topic>
+    <topic id="5">digital revolution</topic>
+  </book>
+  <book id="3">
+    <title>Another Economy is Possible</title>
+    <author id="1">Manuel Castells</author>
+    <author id="2">Sarah Banet-Weiser</author>
+    <author id="4">Sviatlana Hlebik</author>
+    <author id="5">Giorgos Kallis</author>
+    <author id="6">Sarah Pink</author>
+    <author id="7">Kirsten Seale</author> 
+    <author id="8">Lisa J. Servon</author>
+    <author id="8">Lana Swartz</author>
+    <author id="9">Angelos Varvarousis</author>
+    <year>2008</year>
+    <topic id="1">economics</topic>
+    <topic id="2">sharing economy</topic> 
+    <topic id="3">alternative economic practices</topic>
+    <topic id="4">cooperatives</topic>
+    <topic id="5">barter networks</topic>
+  </book>
+</books>

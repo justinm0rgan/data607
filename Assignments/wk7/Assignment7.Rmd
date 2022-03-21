@@ -15,6 +15,7 @@ library(RCurl)
 library(XML)
 library(jsonlite)
 library(rvest)
+library(xml2)
 ```
 
 ## Overview
@@ -34,8 +35,8 @@ Write R code, using our packages of choice, to load the information from each of
 **Question**
 <br>
 *Are the three data frames identical?*
-<Br>
-**<u>Deliverable</u>**
+<br>
+**Deliverable**
 <br>
 Three source files and R code. 
 
@@ -84,15 +85,44 @@ df_html
 
 ```{r import-xml}
 # extract link of xml file
-getURL(books_xml)
+books_xml <- getURL(books_xml)
+
+# get authors
+books_xml %>%
+  read_xml %>% 
+  xml_find_all(xpath = "//book//author") %>% 
+  xml_text()
+
+# get topics
+books_xml %>% 
+  read_xml %>% 
+  xml_find_all(xpath = '//topic') %>% 
+  xml_text()
 
 books_xml %>% 
   xmlParse() %>% 
-  xmlRoot()
+  xpathSApply(path = '//book//topic')
 
-read
+books_xml %>% 
+  xmlParse() %>% 
+  xpathSApply('//book/author[position()=1]')
 
-# error message, must update xml to include authors as attributes
+
+books_parsed <- xmlParse(books_xml)
+# build char vector with book names
+books <- c("Diet for a New America", "The Third Industrial Revolution",
+           "Another Economy is Possible")
+
+(expQuery <- sprintf("//%s/book", books))
+
+
+getAuthor <- function(node) {
+  value <- xmlValue(node)
+  book <- xmlName(xmlParent(node))
+  mat <- c(books = books, value = value)
+}
+
+#as.data.frame(t(xpathSApply(books_parsed,expQuery, getAuthor)))
 ```
 ### JSON
 
@@ -100,8 +130,20 @@ read
 # extract link of json file
 books_json <- getURL(books_json)
 
-books_json %>% 
-  fromJSON()
+# create df from json file
+books_json_df <- books_json %>% 
+  fromJSON() %>% 
+  as.data.frame() %>% 
+  rename_all(funs(str_replace(., 'books\\.',''))) %>% 
+  mutate(
+    author = unlist(lapply(author, 
+                           function(x) str_c(x, collapse =', ' ))),
+    topic = unlist(lapply(topic,
+                          function(x) str_c(x, collapse = ', '))))
+
+books_json_df
 ```
 
 ## Conclusion
+
+HTML and JSON data frames both have 5 columns. JSON took a bit more of effort. I was unable to convert the XML file into a data frame. I tried the technique taught in the text, but couldn't quite get it correct.
