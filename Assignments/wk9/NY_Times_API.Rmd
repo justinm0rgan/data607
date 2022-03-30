@@ -1,0 +1,161 @@
+---
+title: "NY Times Semantic API"
+author: "Justin Williams"
+date: "3/27/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load-packages, message=FALSE, warning=FALSE}
+library(dotenv)
+library(jsonlite)
+library(tidyverse)
+library(lubridate)
+```
+
+## Overview
+
+This RMD will demonstrate working with the NY Times Article API, and coercing the search results into a dataframe.
+
+
+### Load in data
+
+```{r make-api-call}
+# load up hidden api key
+article_api <- Sys.getenv("ARTICLE_API")
+#semantic_api <- Sys.getenv("SEMANTIC_API")
+
+# set base url
+base_url_art <- "http://api.nytimes.com/svc/search/v2/articlesearch.json?q="
+#base_url_sem <- "http://api.nytimes.com/svc/semantic/v2/concept/name"
+
+# set parameters
+term <- "sustainability+climate+change"
+fq <- "&fq=glocation='New York City'"
+begin_date <- "20210101"
+end_date <- "20211231"
+complete_url <- paste0(base_url_art,term,fq,"&begin_date=",begin_date,"&end_date=",end_date,"facet_filter=true&api-key=",article_api,sep = "")
+
+
+# import dataset to R
+sus <- fromJSON(complete_url) 
+
+# preview results
+head(sus)
+
+# view how many hits
+sus$response$meta$hits
+```
+
+This only returns the first 10 results, I would like to return all 645 results in a data frame. This is where the <a href="https://cran.r-project.org/web/packages/jsonlite/vignettes/json-paging.html">jsonlite documentation</a> came in handy. It explains *Paging with jsonlite* and how to combine pages of data.  
+
+### Combine all pages and create dataframe
+
+In order to combine all the requests during 2021, I need to see how many hits there were on the search term:
+
+```{r climate-change-hits}
+hits <- sus$response$meta$hits
+cat("There were ",hits," hits for the search term Sustainability during 2021",sep = "")
+```
+
+At 10 search results per page, lets divide that by 10 and get our pages variable. Pages start from 0 so subtract 1.
+
+```{r max-pages}
+max_pages <- round((hits) / 10 - 1)
+```
+
+Ok, now we can implement the loop specificed in the `jsonlite` package documentation.
+
+```{r loop-pages}
+# store all pages in list
+pages <- list()
+for(i in 0:max_pages){
+  sus_df <- fromJSON(paste0(complete_url, "&page=", i)) %>% 
+    data.frame()
+  message("Retrieving page ", i)
+  pages[[i+1]] <- sus_df
+  Sys.sleep(6)
+}
+```
+
+```{r}
+# combine into one
+sus_df <- rbind_pages(pages)
+
+# preview rows
+nrow(sus_df)
+
+# save df
+saveRDS(sus_df, file = "sustainability_climate_change_nyc_2021.RDS")
+```
+
+Reload df so that I don't have to make API call every time I want to work with the data.
+
+```{r re-load-df}
+sus_df <- readRDS("sustainability_climate_change_nyc_2021.RDS")
+
+head(sus_df)
+```
+
+### Rename column headers
+
+Column headers mostly have response.docs or meta, lets clean that up.
+
+```{r col-names}
+colnames(sus_df)
+```
+
+```{r clean-colnames}
+colnames(sus_df) <- sus_df %>% 
+  colnames() %>% 
+  str_replace_all(c(
+    "response\\.docs\\._" = "", 
+    "response\\.docs\\." = "",
+    "response\\.meta\\." = ""))
+
+# preview results
+colnames(sus_df)
+```
+
+### Some Visuals
+
+Let's take a look at the distribution of articles with keywords `Sustainability` and `Climate Change` in NYC for 2021.
+
+```{r create-month-col}
+sus_df %>% 
+  group_by(month = month(pub_date, label = T)) %>% 
+  summarise(count = n()) %>% 
+  ggplot(aes(month, count, group = 1, color = count)) +
+    geom_line() +
+    labs(y = "Article Count", x = "",
+         title = "NYT Articles containing Sustainability and Climate Change in 2021",
+         color = "")
+```
+
+Interestingly almost double the published articles in Oct vs Jan. I wonder why? Perhaps this has to do with more extreme weather events during that time period.
+
+Let's take a look at the most popular sections in which they where published.
+
+```{r sources}
+sus_df %>% 
+  group_by(section_name) %>% 
+  summarise(count = n()) %>%
+  slice_max(count, n = 10) %>% 
+  mutate(section_name=replace(section_name, section_name=="Today's International New York Times", "Today's Int NYT")) %>%
+  ggplot(aes(reorder(section_name, count), count, fill = count)) +
+    geom_bar(stat = "identity") +
+    labs(x ="", y = "Article Count") +
+    ggtitle("NYT Articles by Section containing Sustainability and Climate Change in 2021") +
+    coord_flip() +
+    scale_fill_continuous(name = "") +
+    theme(plot.title = element_text(hjust = 0.65, vjust=1)) 
+```
+
+Interestingly, Business Day was the most popular section with articles published containing these search terms, not Climate albeit second. 
+
+## Conclusion & Next Steps
+
+
