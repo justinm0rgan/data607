@@ -1,5 +1,5 @@
 ---
-title: "NY Times Semantic API"
+title: "NY Times Article API"
 author: "Justin Williams"
 date: "3/27/2022"
 output: html_document
@@ -18,7 +18,7 @@ library(lubridate)
 
 ## Overview
 
-This RMD will demonstrate working with the NY Times Article API, and coercing the search results into a dataframe.
+Demonstration utilizing the NY Times Article API, and coercing the search results into a data frame. The key words will be `climate+change` and `sustainability` during the year 2021 in NYC.
 
 
 ### Load in data
@@ -43,14 +43,11 @@ complete_url <- paste0(base_url_art,term,fq,"&begin_date=",begin_date,"&end_date
 # import dataset to R
 sus <- fromJSON(complete_url) 
 
-# preview results
-head(sus)
-
 # view how many hits
 sus$response$meta$hits
 ```
 
-This only returns the first 10 results, I would like to return all 645 results in a data frame. This is where the <a href="https://cran.r-project.org/web/packages/jsonlite/vignettes/json-paging.html">jsonlite documentation</a> came in handy. It explains *Paging with jsonlite* and how to combine pages of data.  
+This only returns the first 10 results, I would like to return all 645 results in a data frame. This is where the <a href="https://cran.r-project.org/web/packages/jsonlite/vignettes/json-paging.html">jsonlite documentation</a> came in handy. It explains *Paging with jsonlite* and how to combine pages of data. The following code loop was adapted directly from the documentation.
 
 ### Combine all pages and create dataframe
 
@@ -69,7 +66,7 @@ max_pages <- round((hits) / 10 - 1)
 
 Ok, now we can implement the loop specificed in the `jsonlite` package documentation.
 
-```{r loop-pages}
+```{r loop-pages, message=FALSE}
 # store all pages in list
 pages <- list()
 for(i in 0:max_pages){
@@ -96,8 +93,6 @@ Reload df so that I don't have to make API call every time I want to work with t
 
 ```{r re-load-df}
 sus_df <- readRDS("sustainability_climate_change_nyc_2021.RDS")
-
-head(sus_df)
 ```
 
 ### Rename column headers
@@ -156,6 +151,45 @@ sus_df %>%
 
 Interestingly, Business Day was the most popular section with articles published containing these search terms, not Climate albeit second. 
 
+Let's take a look at word count
+
+```{r word-count}
+sus_df %>%
+  ggplot(aes(word_count)) + 
+    geom_histogram(binwidth = 150) +
+    labs(y = "Article Count", x = "Article per word count",
+         title = "Distribution of articles by word count")
+```
+
+Looks like average article count is ~1500 words with some extreme outliers with upwards of 10k words. There are also ~25 with 0, perhaps they were visuals classified as articles.
+
+I wonder what median word count by section name article was published in would look like
+
+```{r word-count-section-name}
+(word_count_section <- sus_df %>% 
+  group_by(section_name) %>% 
+  summarise(count = n(),
+            median_word_count = round(median(word_count)),
+            mean_word_count = round(mean(word_count))) %>% 
+  arrange(desc(count)))
+```
+
+```{r visualize-word-count-section}
+word_count_section %>%
+  slice_max(count, n = 10 ) %>% 
+  ggplot(aes(reorder(section_name, median_word_count), median_word_count, fill = median_word_count)) +
+    geom_bar(stat = "identity") +
+    coord_flip() +
+    scale_fill_gradient2(high = scales::muted("blue"), mid = scales::muted("red")) +
+    labs(x = "", y = "Median word count", title = "Median word count by Section Name (Top 10)") +
+    theme(legend.position = "none") +
+    geom_text(aes(label = median_word_count, 
+                    hjust = 1.2),
+                    color = "#ffffff")
+  
+```
+
 ## Conclusion & Next Steps
 
+Looks like using the NYT API could be very useful for future data collection. For 2021 at least, articles containing key words climate change and sustainability were most prevalent in October. Would be interesting to see when they were most published over a series of years. Also, articles published are most prevalent in the Business section, even more then the Climate section. However, a full analysis would need to account for the very real possibility that the Business section publishes more articles overall then the climate section, and would therefore have more opportunity to publish articles with these key words. Articles have an average of 1500 words, and Podcasts and Magazine have by far the highest median word count. Would be interesting to build some word clouds with facet mapping to compare most popular words by section name.
 
