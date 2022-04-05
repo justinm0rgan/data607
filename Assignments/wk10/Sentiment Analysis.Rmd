@@ -1,0 +1,82 @@
+---
+title: "Sentiment Analysis"
+author: "Justin Williams"
+date: "4/4/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load-packages, message=FALSE, warning=FALSE}
+library(tidyselect)
+library(tidyverse)
+library(pdftools)
+library(stringr)
+```
+
+## Overview
+
+This is a demostration of using sentiment analysis to analyze a corpus.
+
+### Load Corpus
+
+I found a copy of my favorite book in `pdf` online, so I will download it and convert it to csv for sentiment analysis.
+
+```{r convert-pdf-csv}
+# pdf url
+url <- "https://ia802800.us.archive.org/4/items/JohnRobbinsDietForANewAmerica/John_Robbins_Diet_for_a_New_America.pdf"
+
+# download file
+download.file(url, destfile = basename(url), method="curl", extra="-k")
+
+#load pdf
+diet_new_am <- 
+  pdf_text("John_Robbins_Diet_for_a_New_America.pdf") %>% 
+  str_split("\n")
+
+# check type
+class(diet_new_am)
+
+# how many pages
+length(diet_new_am)
+```
+
+Now it's a list with 463 nested lists. Let's separate each lines characters.
+
+```{r split-lines}
+# squish then split
+diet_new_am <- diet_new_am %>% 
+  str_squish() %>% # squish lines
+  strsplit(split= "\\,\\s\\\"") #split on spaces
+
+
+# get rid of "c("
+for(i in 1:length(diet_new_am)) {
+   diet_new_am[[i]][1] <- diet_new_am[[i]][1] %>%
+    str_extract("(?<=c[:punct:]\\\").*")
+}
+
+# get rid of \
+for(i in 1:length(diet_new_am)) {
+  for(j in 1:length(diet_new_am[[i]])) {
+    diet_new_am[[i]][j] <- diet_new_am[[i]][j] %>%
+      str_extract(".*(?=\")")
+    }
+}
+
+head(diet_new_am)
+diet_new_am[[5]][1]
+```
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
