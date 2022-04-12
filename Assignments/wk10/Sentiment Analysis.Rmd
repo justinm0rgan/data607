@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r load-packages, message=FALSE, warning=FALSE}
 library(tidyselect)
 library(tidyverse)
+library(tidytext)
 library(pdftools)
 library(stringr)
 ```
@@ -41,6 +42,8 @@ class(diet_new_am)
 
 # how many pages
 length(diet_new_am)
+
+diet_new_am[[5]]
 ```
 
 Now it's a list with 463 nested lists. Let's separate each lines characters.
@@ -67,16 +70,33 @@ for(i in 1:length(diet_new_am)) {
 }
 
 head(diet_new_am)
-diet_new_am[[5]][1]
+diet_new_am[[5]]
 ```
 
 
-## Including Plots
+## Tidytext examples
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r tidytest-examples}
+library(janeaustenr)
+
+df <- austen_books()
+df[df$book == "Sense & Sensibility",]
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r }
+
+diet_new_am_1 <- 
+  pdf_text("John_Robbins_Diet_for_a_New_America.pdf") %>% 
+  data_frame()
+
+diet_new_am_1 %>% 
+  unnest(cols = c('.')) %>% # pdfs_text is a list
+  unnest_tokens(word, text, strip_numeric = TRUE) %>%  # removing all numbers
+  group_by(document, word)
+
+diet_new_am_1
+```
+
